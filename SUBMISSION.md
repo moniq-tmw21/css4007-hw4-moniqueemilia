@@ -1,7 +1,6 @@
 # HW4 — submission
 
-**AI assistance:** <!-- what you used, and for what. "None" is an answer too. -->
-
+**AI assistance:** I used ChatGPT to understand the assignment instructions and plan the workflow.
 ---
 
 ## Part A — Plan on paper (Easy)
@@ -12,52 +11,246 @@
 
 | # | Step | What goes in (types) | What comes out (types) | When it goes wrong | Tool, loop, or model? |
 |---|---|---|---|---|---|
-| 1 | | | | | |
+| 1 | Identify the required facts | Question (`str`) | District names (`list[str]`), fields (`list[str]`), years (`list[int]), and calculation plan (`str`) | If the question is ambiguous, request clarification or mark it unanswered instead of inventing information. | Model |
+| 2 | Validate and dispatch tool requests | Tool name (`str`) and JSON arguments (`str`) | Validated arguments (`dict`) and dispatched request | Return a structured error for invalid JSON, unknown tools, missing parameters, or incorrect types. | Loop |
+| 3 | Retrieve authoritative facts | Entity name (`str`) and field name (`str`) | Fact (`dict`) containing value, unit, year, and source document IDs | Return an informative error for unknown or ambiguous entities, unsupported fields, missing facts, or unreadable numbers. Exclude archived profiles and apply corrections. | `lookup` tool |
+| 4 | Construct an arithmetic expression | Retrieved facts (`list[dict]`) and calculation plan (`str`) | Arithmetic expression (`str`) including necessary unit conversions | If units are unknown or incompatible, obtain additional information or report that the calculation cannot proceed. | Model |
+| 5 | Execute arithmetic safely | Arithmetic expression (`str`) | Numeric result (`float`) or structured error (`dict`) | Reject unsupported syntax, function calls, attribute access, excessive complexity, division by zero, and values outside the allowed range. | `calculate` tool |
+| 6 | Compare calculated results | Calculated values (`list[float]`) and comparison requested (`str`) | Selected district or yes/no answer (`str`) and numeric result (`float`) | Handle ties explicitly. If a required calculation fails, correct the request or mark the question unanswered. | Model |
+| 7 | Format and record the answer | Selected answer (`str`), numeric result (`float`), and required precision (`int`) | Final answer (`str`) and execution record (`dict`) | Record missing or malformed final answers as unanswered. Stop and record unanswered status when the round limit is reached. | Model formats; loop records |
 
 **How the steps connect:**
 
-<!-- which step feeds which: a list, an ASCII diagram, or an image committed to the repo -->
+Question → identify required facts → validate and dispatch lookup requests → retrieve authoritative facts → construct arithmetic expressions → validate and dispatch calculator requests → calculate → compare results → format and record the final answer.
+
+Each lookup result supplies the facts needed to construct a calculation. Each calculator result supplies the values needed for comparison. The loop validates every tool request and returns its result to the model. These steps repeat when additional facts or calculations are needed, up to the fixed round limit.
 
 **What I am assuming:**
 
-<!-- census year, archived profiles, corrections, units, where rounding happens, ... -->
+- Population figures refer to the 2025 census unless another year is explicitly requested. Population growth calculations use the 2020 and 2025 census figures.
+- Budgets and household water use refer to 2025. School enrolment refers to the 2025/26 school year.
+- Archived profiles are superseded and are excluded when retrieving current facts.
+- Correction notices override the original profiles. Brightwater's correct area is 921.4 square kilometres.
+- Ossbridge and Ossford are different districts. Ambiguous or misspelled names must not be silently assigned to either district.
+- Retrieved facts include their units and source document IDs. Corrected facts cite both the original profile and the correction notice.
+- One megalitre equals 1,000 cubic metres or 1,000,000 litres. Daily water calculations use 365 days for 2025.
+- Budgets stated in million tenge are converted when the requested result uses tenge or thousand tenge.
+- Intermediate results are not rounded. Rounding is applied only to the final answer at the required precision.
+- Ground-truth answers are used only for evaluation and are never included in model prompts or tool results.
+- Missing facts or failed calculations are not replaced with invented values. If they cannot be resolved within the round limit, the question is marked unanswered.
 
 ### A2 — The two tools
 
 #### `lookup`
 
-```json
+```json 
+{
+  "type": "function",
+  "function": {
+    "name": "lookup",
+    "description": "Retrieve one factual field about a Nine Rivers district, or a regional water fact using entity Region. Returns the value, unit, relevant year, and source document IDs. Uses current profiles, excludes archived profiles, and applies correction notices. Use calculate for arithmetic.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "entity": {
+          "type": "string",
+          "description": "Exact district name, or Region for the regional water tariff and unit conversion."
+        },
+        "field": {
+          "type": "string",
+          "enum": [
+            "population_2020",
+            "population_2025",
+            "area_km2",
+            "budget_2025_million_tenge",
+            "water_use_2025",
+            "schools",
+            "pupils_2025_26",
+            "paved_road_km",
+            "founded_year",
+            "water_tariff_2025",
+            "megalitre_to_cubic_metres"
+          ],
+          "description": "The requested fact. Water use retains its original unit. The water tariff and conversion fields require entity Region."
+        }
+      },
+      "required": ["entity", "field"],
+      "additionalProperties": false
+    }
+  }
+}
 ```
 
 | Case | What the tool returns |
 |---|---|
-| success | |
-| | |
+| success | Returns a value, unit, relevant year, and source IDs. Example: `{"value": 921.4, "unit": "km2", "year": 2025, "sources": ["NR-05", "NR-16"]}`. Timeless facts use `year: null`. |
+| Unknown or misspelled entity | Returns an error with possible matching names, without automatically choosing one. |
+| Ambiguous entity | Returns an error requesting an exact district name. |
+| Unsupported field or entity-field combination | Returns an error identifying the unsupported request and listing valid fields. |
+| Archived profile | Excludes the archived profile and uses the current profile. Returns an error if no current fact is available. |
+| Corrected fact | Returns the corrected value and cites both the original profile and the correction notice. |
+| Missing or unreadable fact | Returns an error identifying the fact that could not be retrieved or parsed. |
+| Invalid arguments | Returns an error for missing parameters, incorrect types, unexpected parameters, or excessively long inputs. |
+| Unavailable or malformed corpus | Returns a data-loading error instead of crashing. |
 
 **Worst thing it could do with strange or dangerous input:**
+
+The worst plausible outcome is returning the wrong fact, which could produce an incorrect final answer. Very long inputs could also waste processing time. The tool limits input length and output size, validates parameters, and rejects ambiguous names. Inputs are treated as data and cannot execute code, select arbitrary files, or modify the corpus.
 
 #### `calculate`
 
-```json
+```json 
+{
+  "type": "function",
+  "function": {
+    "name": "calculate",
+    "description": "Safely evaluate an arithmetic expression using numeric literals, parentheses, addition, subtraction, multiplication, division, and unary plus or minus. Returns a numeric result without rounding intermediate values. Rejects powers, names, function calls, attribute access, division by zero, and excessive expressions. Expressions are limited to 200 characters and 100 AST nodes; numeric magnitudes must not exceed 1000000000000000.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "expression": {
+          "type": "string",
+          "description": "Arithmetic expression to evaluate, for example 44675 / 921.4.",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      },
+      "required": ["expression"],
+      "additionalProperties": false
+    }
+  }
+}
 ```
 
 | Case | What the tool returns |
 |---|---|
-| success | |
-| | |
+| success | Returns `{"result": 7.0}` for the expression `3 + 4`. |
+| Invalid arguments | Returns an error for a missing expression, incorrect type, or unexpected parameters. |
+| Empty or malformed expression | Returns an error explaining that the expression is empty or has invalid syntax. |
+| Unsupported syntax | Returns an error for names, function calls, attribute access, powers, or other disallowed syntax. |
+| Division by zero | Returns `{"error": "Division by zero is not allowed."}`. |
+| Excessive expression size | Returns an error if the expression exceeds 200 characters or 100 AST nodes. |
+| Excessive numeric magnitude | Returns an error if a numeric literal or intermediate result has an absolute value greater than 1000000000000000, or if a result is not finite. |
 
 **Worst thing it could do with strange or dangerous input:**
 
+The worst plausible outcome is an incorrect numerical result due to floating-point precision or a rejected calculation that the model cannot complete. Malicious expressions could attempt code execution or excessive computation. The implementation uses an AST allowlist, never uses eval or exec, rejects powers and all executable constructs, and limits expression size and numeric magnitude.
+
 ### A3 — Q-09 by hand
 
-```json
+```json 
+[
+  {
+    "role": "user",
+    "content": "Which district has the higher population density in 2025, Brightwater or Millbrook, and by how many residents per square kilometre?"
+  },
+  {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+      {
+        "id": "call_1",
+        "type": "function",
+        "function": {
+          "name": "lookup",
+          "arguments": "{\"entity\":\"Brightwater\",\"field\":\"population_2025\"}"
+        }
+      },
+      {
+        "id": "call_2",
+        "type": "function",
+        "function": {
+          "name": "lookup",
+          "arguments": "{\"entity\":\"Brightwater\",\"field\":\"area_km2\"}"
+        }
+      },
+      {
+        "id": "call_3",
+        "type": "function",
+        "function": {
+          "name": "lookup",
+          "arguments": "{\"entity\":\"Millbrook\",\"field\":\"population_2025\"}"
+        }
+      },
+      {
+        "id": "call_4",
+        "type": "function",
+        "function": {
+          "name": "lookup",
+          "arguments": "{\"entity\":\"Millbrook\",\"field\":\"area_km2\"}"
+        }
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_1",
+    "content": "{\"value\":44675,\"unit\":\"residents\",\"year\":2025,\"sources\":[\"NR-05\"]}"
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_2",
+    "content": "{\"value\":921.4,\"unit\":\"km2\",\"year\":2025,\"sources\":[\"NR-05\",\"NR-16\"]}"
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_3",
+    "content": "{\"value\":37203,\"unit\":\"residents\",\"year\":2025,\"sources\":[\"NR-11\"]}"
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_4",
+    "content": "{\"value\":758.6,\"unit\":\"km2\",\"year\":2025,\"sources\":[\"NR-11\"]}"
+  },
+  {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+      {
+        "id": "call_5",
+        "type": "function",
+        "function": {
+          "name": "calculate",
+          "arguments": "{\"expression\":\"37203 / 758.6 - 44675 / 921.4\"}"
+        }
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_5",
+    "content": "{\"result\":0.5556561156}"
+  },
+  {
+    "role": "assistant",
+    "content": "Millbrook has the higher population density. Using Brightwater's corrected area from NR-16, the difference is approximately 0.6 residents per square kilometre.\nANSWER: Millbrook | 0.6"
+  }
+]
 ```
 
 **My arithmetic:**
 
+Population density = population / area.
+
+Brightwater: 44,675 / 921.4 ≈ 48.4859996 residents per square kilometre.
+
+Millbrook: 37,203 / 758.6 ≈ 49.0416557 residents per square kilometre.
+
+Difference: (37,203 / 758.6) − (44,675 / 921.4) ≈ 0.5556561 residents per square kilometre.
+
+The difference is calculated using the unrounded densities and rounded only at the end. To one decimal place, it is 0.6 residents per square kilometre.
+
+Therefore, Millbrook has the higher population density.
+
+Brightwater's area must be taken from correction notice NR-16, which replaces the incorrect 912.4 square kilometres in NR-05 with 921.4 square kilometres.
+
 ### A4 — Why I split it this way
 
-<!-- one other way to split the task, and why you did not choose it -->
+I separated factual retrieval from arithmetic because these operations have different responsibilities and failure modes. The lookup tool selects authoritative facts, handles archived profiles and corrections, and provides source IDs. The calculate tool evaluates explicit arithmetic expressions under restricted rules. The model interprets the question and decides which facts and calculations are needed, while the loop validates requests, dispatches tools, and records their results.
+
+An alternative would be one large tool that receives a question and returns the complete answer. I rejected this approach because it would hide retrieval, calculation, and comparison inside one operation, making errors harder to isolate and test. Separate tools make it possible to check whether a wrong answer came from selecting the wrong fact, constructing the wrong expression, or interpreting the result incorrectly.
+
+The design depends most strongly on retrieving authoritative facts with the correct units. A calculator can evaluate an expression correctly even when its inputs are wrong. For example, using Brightwater's uncorrected area would produce an incorrect comparison despite correct arithmetic.
 
 ---
 
