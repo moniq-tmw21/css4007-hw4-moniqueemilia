@@ -263,7 +263,9 @@ The design depends most strongly on retrieving authoritative facts with the corr
 ### B2 — Tests
 
 ```text
-<!-- pytest output -->
+...........................                                              [100%]
+27 passed in 0.04s
+
 ```
 
 ### B3 — The loop
