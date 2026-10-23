@@ -1,0 +1,57 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "lookup",
+      "description": "Retrieve one factual field about a Nine Rivers district, or a regional water fact using entity Region. Returns the value, unit, relevant year, and source document IDs. Uses current profiles, excludes archived profiles, and applies correction notices. Use calculate for arithmetic.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "entity": {
+            "type": "string",
+            "description": "Exact district name, or Region for the regional water tariff and unit conversion."
+          },
+          "field": {
+            "type": "string",
+            "enum": [
+              "population_2020",
+              "population_2025",
+              "area_km2",
+              "budget_2025_million_tenge",
+              "water_use_2025",
+              "schools",
+              "pupils_2025_26",
+              "paved_road_km",
+              "founded_year",
+              "water_tariff_2025",
+              "megalitre_to_cubic_metres"
+            ],
+            "description": "The requested fact. Water use retains its original unit. The water tariff and conversion fields require entity Region."
+          }
+        },
+        "required": ["entity", "field"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "calculate",
+      "description": "Safely evaluate an arithmetic expression using numeric literals, parentheses, addition, subtraction, multiplication, division, and unary plus or minus. Returns a numeric result without rounding intermediate values. Rejects powers, names, function calls, attribute access, division by zero, and excessive expressions. Expressions are limited to 200 characters and 100 AST nodes; numeric magnitudes must not exceed 1000000000000000.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "expression": {
+            "type": "string",
+            "description": "Arithmetic expression to evaluate, for example 44675 / 921.4.",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": ["expression"],
+        "additionalProperties": false
+      }
+    }
+  }
+]

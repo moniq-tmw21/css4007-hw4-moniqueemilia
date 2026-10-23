@@ -271,8 +271,13 @@ The design depends most strongly on retrieving authoritative facts with the corr
 ### B3 — The loop
 
 - Round limit, and why:
+The loop allows a maximum of 10 model calls per question. This provides room for fact retrieval, calculations, and corrections while bounding the number of API calls. If no valid final answer is produced within this limit, the question is marked unanswered.
 - Where the logs are:
+Pilot logs are saved as timestamped JSON files in outputs/pilot/. Each log contains the conversation, tool definitions, tool requests, arguments, results, execution times, API token usage, and completion status.
 - Real Q-09 conversation compared with my A3 version, what is different:
+Both conversations retrieved the same four facts, including Brightwater's corrected area of 921.4 km2 from NR-05 and NR-16, and produced the final answer Millbrook | 0.6.
+My A3 design used four lookup calls followed by one calculator call containing the complete difference expression, requiring three model rounds including the final answer. The actual run used four lookup calls in round 1, two separate density calculations in round 2, and one difference calculation in round 3, followed by the final answer in round 4.
+Therefore, the actual run made seven tool calls instead of five and used four model rounds instead of three. It calculated each density separately before calculating the difference. The difference calculation still used the original expressions rather than rounded intermediate values, returning 0.5556561156405735. The run consumed 3,059 input tokens and 238 output tokens.
 
 ### B4 — Three strategies
 
