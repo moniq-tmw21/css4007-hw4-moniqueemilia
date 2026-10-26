@@ -283,14 +283,26 @@ Therefore, the actual run made seven tool calls instead of five and used four mo
 
 **What I kept the same:**
 
-<!-- model, temperature, k, prompts, answer format, anything else -->
+Before the full runs, I will fix the model to gpt-5.6-luna, use the Chat Completions API with reasoning_effort="none", and use the same twenty questions, original corpus, required answer precision, final answer format, and scoring rule. Each question will start a fresh conversation.
 
-**My rule for a correct answer** (written before the first full run):
+S1 will receive all documents and answer in one model call. S2 will receive the same documents, be instructed to solve the question step by step, and generate five independent samples (k=5), followed by voting. S3 will receive no documents in its prompt and will access facts through lookup and calculate, with a limit of ten model calls per question.
+
+I will test whether temperature=0.7 is supported before the full runs. If supported, it will be used for all three strategies. Otherwise, temperature will be omitted consistently and this limitation will be recorded. All three strategies will be run on all twenty questions twice.
+
+**My rule for a correct answer** 
+
+The evaluator reads the final line in the format ANSWER: <name or yes/no> | <number>. After trimming surrounding whitespace, the answer label must match the ground-truth label exactly, including case. The number must be finite and differ from the ground-truth value rounded to the specified decimals by no more than 10^(-decimals). Decimal arithmetic will be used for comparison.
+
+Missing or malformed answers, API failures, and reaching the S3 round limit without a valid final answer count as unanswered and incorrect. A validly formatted but wrong answer counts as incorrect, not unanswered.
+
+For S2, the five samples vote on the answer label and numeric value rounded to the required precision. Numerically equivalent representations count as the same answer. The most frequent valid answer wins. Ties are resolved by selecting the tied answer that appeared first. Invalid samples receive no vote. If all five samples are invalid, the question is unanswered.
+
+Ground-truth answers and values are used only for evaluation and are never sent to the model. Token totals include all five S2 samples and every S3 round.
 
 | Run | Strategy | Correct /20 | Unanswered | Input tokens | Output tokens | Median seconds per question | Total seconds | Cost ($) |
 |---|---|---:|---:|---:|---:|---:|---:|---:|
 | 1 | S1 direct | | | | | | | |
-| 1 | S2 think and vote (k = ) | | | | | | | |
+| 1 | S2 think and vote (k = 5) | | | | | | | |
 | 1 | S3 tools | | | | | | | |
 | 2 | S1 direct | | | | | | | |
 | 2 | S2 think and vote (k = ) | | | | | | | |
