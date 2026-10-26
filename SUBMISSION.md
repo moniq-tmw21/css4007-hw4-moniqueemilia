@@ -368,7 +368,21 @@ Ground-truth answers and values are used only for evaluation and are never sent 
 
 | Question | Calls (your description) | Calls (vague) | Answer (yours) | Answer (vague) |
 |---|---:|---:|---|---|
-| | | | | |
+| Q-03 | 7 | 8 | Lindenmoor, 5.3 | Lindenmoor, 5.3 |
+| Q-05 | 7 | 7 | Coldharbour, 14235 | Coldharbour, 14235 |
+| Q-09 | 7 | 7 | Millbrook, 0.6 | Millbrook, 0.6 |
+| Q-13 | 9 | 9 | Unanswered: invalid final format | Unanswered: invalid final format |
+| Q-18 | 3 | 3 | yes, 40013 | yes, 40013 |
+
+“Calls” counts individual tool invocations, including both lookup and calculate. I compared S3 run 1 with a new execution of the same five questions after changing only lookup's function description to "Looks things up."
+
+Both descriptions produced four correct answers out of five under the fixed scoring rule. Q-13 was unanswered in both conditions because the final line was "ANSWER: Coldharbour | 4.16%". Although the district and value were correct, the percentage sign violated the required numeric-only format.
+
+The main difference occurred on Q-03. The original description produced seven tool calls across three model rounds. The vague description produced eight tool calls across five model rounds: the conversion-factor lookup moved to a separate round, and the model added an explicit calculator call for the difference. The water-use expressions were mathematically equivalent, and the final answer remained Lindenmoor, 5.3.
+
+For Q-05, Q-09, Q-13, and Q-18, tool-call counts and substantive arguments remained unchanged. Overall, tool calls increased from 33 to 34 and model rounds increased from 17 to 19.
+
+The vague description did not remove all guidance: the tool name, parameter descriptions, allowed field names, shared system instructions, and correction-handling implementation remained available. These could explain why fact retrieval still worked. Because temperature was 0.7 and each condition was observed only once per question, the differences cannot confidently be attributed to the description alone. This experiment shows unchanged accuracy on these five questions, not that tool descriptions never matter.
 
 ### C2 — Three mistakes explained
 
