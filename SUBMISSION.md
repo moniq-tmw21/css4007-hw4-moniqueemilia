@@ -1,6 +1,7 @@
 # HW4 — submission
 
-**AI assistance:** I used ChatGPT to understand the assignment instructions and plan the workflow.
+**AI assistance:** 
+I used ChatGPT to interpret the assignment, draft the solution design and written responses, generate Python code and tests, troubleshoot errors, and analyse my experiment logs. I ran the code and API experiments locally. The reported results come from those saved executions, not invented measurements.
 ---
 
 ## Part A — Plan on paper (Easy)
@@ -258,7 +259,7 @@ The design depends most strongly on retrieving authoritative facts with the corr
 
 ### What I changed from Part A while coding
 
-<!-- what changed in your plan, and why. "None" is an answer too. -->
+The tool interfaces and decomposition follow Part A. During implementation, I explicitly set reasoning_effort="none" because the API rejected function tools with the default reasoning setting for gpt-5.6-luna through Chat Completions. I used this setting consistently across S1, S2, and S3. I also added separate files for tool definitions, evaluation, experiment execution, and token-overhead measurement to keep the implementation organised.
 
 ### B2 — Tests
 
