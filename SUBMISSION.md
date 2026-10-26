@@ -418,7 +418,34 @@ The conversation required three model rounds: retrieving facts, requesting calcu
 
 ### C3 — Which strategy I would use, and what would change it
 
+I would choose S3 for this problem because it achieved the highest combined accuracy while using fewer tokens, less time, and lower estimated cost than S2.
+
+Across both runs, S3 answered 36 out of 40 correctly (90%), compared with 33 out of 40 for S2 (82.5%) and 15 out of 40 for S1 (37.5%). S3 used 111,169 input tokens and 8,876 output tokens, compared with S2's 438,400 input tokens and 26,387 output tokens. Its total question execution time was 361.974 seconds, compared with 570.720 seconds for S2. Estimated cost was $0.031752 for S3 and $0.047237 for S2.
+
+I would not choose S2 here because five samples repeatedly send the full corpus and generate multiple responses without guaranteeing correct arithmetic. On Q-05 in run 1, voting selected 14233 rather than the expected 14235. S3 delegates arithmetic to a restricted calculator and retrieves facts with source IDs.
+
+S1 was fastest and cheapest, taking 129.293 seconds and costing an estimated $0.010414 across both runs. However, its substantially lower accuracy and 18 unanswered results make it unsuitable when reliable answers are important. The unanswered count includes responses rejected for formatting, so the accuracy comparison measures the complete answering system rather than mathematical ability alone.
+
+My choice would change under the following conditions:
+
+- With a strict latency limit or a very small budget, I would choose S1 if lower reliability were acceptable. Its median response time was approximately three seconds per question in both runs.
+- For simple factual questions with no arithmetic and a small corpus, I would initially choose S1 and validate it on representative examples. The calculator's main benefit would no longer apply.
+- With 1,000 times more documents, I would retain the S3 approach but replace the current lookup implementation with indexed retrieval. This would avoid sending the entire corpus with every question.
+- If tools were unavailable but multiple samples were affordable, I would choose S2 over S1 based on its higher observed accuracy, while recognising that voting does not verify arithmetic.
+
+S3 did not win outright in every run: S2 and S3 both scored 17/20 in run 2. Therefore, I regard S3 as the best-supported choice for this dataset and implementation, rather than a universally superior strategy.
+
 ### C4 — How sure I can be
+
+The two runs showed noticeable variation. S1 improved from 6/20 to 9/20, a change of three questions or 15 percentage points. S2 improved from 16/20 to 17/20, a change of five percentage points. S3 decreased from 19/20 to 17/20, a change of ten percentage points.
+
+The difference between the two strongest strategies was not stable. S3 exceeded S2 by three questions in run 1, but they tied in run 2. Their combined accuracy difference was 7.5 percentage points, which is smaller than S3's ten-percentage-point change between runs. These results support a tentative preference for S3, but do not establish a reliable accuracy advantage over S2.
+
+The 40 evaluations per strategy are repeated measurements of the same twenty questions, not forty independent questions. The dataset is small and covers one fictional region. Accuracy also depends on the scoring rule: some numerically correct responses were marked unanswered because their final format was invalid.
+
+Before trusting the ranking, I would start with at least 200 distinct questions covering arithmetic, unit conversion, corrections, archived profiles, and similar district names, and run each strategy at least five times. This is a proposed starting point rather than a guaranteed sufficient sample size. I would compare strategies on the same questions, estimate uncertainty while accounting for repeated questions, and increase the sample if the accuracy difference remained uncertain.
+
+Cost also varied despite fixed settings. For example, S1 used 43,620 input tokens in each run, but its estimated cost decreased from $0.008423 to $0.001991. Because the calculation applies different rates to cached and uncached input, cached-token usage should be examined before attributing this difference to strategy efficiency. Future conclusions should distinguish total token demand, caching effects, execution time, and answer reliability.
 
 ### Final questions
 
