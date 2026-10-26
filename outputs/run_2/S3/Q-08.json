@@ -1,0 +1,351 @@
+{
+  "model": "gpt-5.6-luna",
+  "strategy": "S3",
+  "question": "At the 2025 household water tariff, whose households paid more for water in 2025, Brightwater's or Millbrook's, and by how many million tenge?",
+  "decimals": 2,
+  "settings": {
+    "reasoning_effort": "none",
+    "temperature": 0.7,
+    "max_rounds": 10,
+    "k": 1,
+    "vague_lookup": false
+  },
+  "tool_definitions": [
+    {
+      "type": "function",
+      "function": {
+        "name": "lookup",
+        "description": "Retrieve one factual field about a Nine Rivers district, or a regional water fact using entity Region. Returns the value, unit, relevant year, and source document IDs. Uses current profiles, excludes archived profiles, and applies correction notices. Use calculate for arithmetic.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "entity": {
+              "type": "string",
+              "description": "Exact district name, or Region for the regional water tariff and unit conversion."
+            },
+            "field": {
+              "type": "string",
+              "enum": [
+                "population_2020",
+                "population_2025",
+                "area_km2",
+                "budget_2025_million_tenge",
+                "water_use_2025",
+                "schools",
+                "pupils_2025_26",
+                "paved_road_km",
+                "founded_year",
+                "water_tariff_2025",
+                "megalitre_to_cubic_metres"
+              ],
+              "description": "The requested fact. Water use retains its original unit. The water tariff and conversion fields require entity Region."
+            }
+          },
+          "required": [
+            "entity",
+            "field"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "calculate",
+        "description": "Safely evaluate an arithmetic expression using numeric literals, parentheses, addition, subtraction, multiplication, division, and unary plus or minus. Returns a numeric result without rounding intermediate values. Rejects powers, names, function calls, attribute access, division by zero, and excessive expressions. Expressions are limited to 200 characters and 100 AST nodes; numeric magnitudes must not exceed 1000000000000000.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "expression": {
+              "type": "string",
+              "description": "Arithmetic expression to evaluate, for example 44675 / 921.4.",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": [
+            "expression"
+          ],
+          "additionalProperties": false
+        }
+      }
+    }
+  ],
+  "conversations": [
+    {
+      "sample": 1,
+      "messages": [
+        {
+          "role": "system",
+          "content": "Answer questions about the fictional Nine Rivers Region.\nUse only the supplied documents or facts returned by tools.\nRespect correction notices, years, and units.\nDo not invent facts.\nKeep intermediate precision and round only the final result.\nEnd with exactly:\nANSWER: <name or yes/no> | <number>\nUse lookup to retrieve facts and calculate to perform arithmetic."
+        },
+        {
+          "role": "user",
+          "content": "At the 2025 household water tariff, whose households paid more for water in 2025, Brightwater's or Millbrook's, and by how many million tenge?\nRound the final number to 2 decimal places."
+        },
+        {
+          "role": "assistant",
+          "annotations": [],
+          "tool_calls": [
+            {
+              "id": "call_QCwMUOiufL0DJDmBjDFEmRfa",
+              "function": {
+                "arguments": "{\"entity\": \"Brightwater\", \"field\": \"water_use_2025\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_43cvBuGKSEPfZKQ7KkR67gzQ",
+              "function": {
+                "arguments": "{\"entity\": \"Millbrook\", \"field\": \"water_use_2025\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_Sx5aIObF94t8y5bYt399KDMz",
+              "function": {
+                "arguments": "{\"entity\": \"Region\", \"field\": \"water_tariff_2025\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_QCwMUOiufL0DJDmBjDFEmRfa",
+          "content": "{\"value\": 3315.0, \"unit\": \"megalitres\", \"year\": 2025, \"sources\": [\"NR-05\"]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_43cvBuGKSEPfZKQ7KkR67gzQ",
+          "content": "{\"value\": 2806.0, \"unit\": \"megalitres\", \"year\": 2025, \"sources\": [\"NR-11\"]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_Sx5aIObF94t8y5bYt399KDMz",
+          "content": "{\"value\": 142.35, \"unit\": \"tenge per cubic metre\", \"year\": 2025, \"sources\": [\"NR-15\"]}"
+        },
+        {
+          "role": "assistant",
+          "annotations": [],
+          "tool_calls": [
+            {
+              "id": "call_iDmgYTvrcCFhNdIQITO8Y9KO",
+              "function": {
+                "arguments": "{\"entity\": \"Region\", \"field\": \"megalitre_to_cubic_metres\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_ID8Pwr7FAgxwmQ8pthjIPjmR",
+              "function": {
+                "arguments": "{\"expression\": \"(3315-2806)*1000*142.35/1000000\"}",
+                "name": "calculate"
+              },
+              "type": "function"
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_iDmgYTvrcCFhNdIQITO8Y9KO",
+          "content": "{\"value\": 1000, \"unit\": \"cubic metres per megalitre\", \"year\": null, \"sources\": [\"NR-15\"]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_ID8Pwr7FAgxwmQ8pthjIPjmR",
+          "content": "{\"result\": 72.45615}"
+        },
+        {
+          "content": "Brightwater's households paid more, by **72.46 million tenge**.\n\nANSWER: Brightwater | 72.46",
+          "role": "assistant",
+          "annotations": []
+        }
+      ]
+    }
+  ],
+  "api_calls": [
+    {
+      "sample": 1,
+      "round": 1,
+      "response_id": "chatcmpl-EdGC57lTuMP2IqqwdwK1ymAuNPp6C",
+      "seconds": 2.362559000001056,
+      "usage": {
+        "completion_tokens": 85,
+        "prompt_tokens": 541,
+        "total_tokens": 626,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "text_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "image_tokens": null,
+          "text_tokens": null
+        }
+      },
+      "finish_reason": "tool_calls"
+    },
+    {
+      "sample": 1,
+      "round": 2,
+      "response_id": "chatcmpl-EdGC78uUQs9EO7K9lgDQlPKbbB54X",
+      "seconds": 1.9450318999879528,
+      "usage": {
+        "completion_tokens": 72,
+        "prompt_tokens": 742,
+        "total_tokens": 814,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "text_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "image_tokens": null,
+          "text_tokens": null
+        }
+      },
+      "finish_reason": "tool_calls"
+    },
+    {
+      "sample": 1,
+      "round": 3,
+      "response_id": "chatcmpl-EdGC9ttHwQKzLiXLl19dcOOK5vgG6",
+      "seconds": 1.8123893000010867,
+      "usage": {
+        "completion_tokens": 29,
+        "prompt_tokens": 870,
+        "total_tokens": 899,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "text_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "image_tokens": null,
+          "text_tokens": null
+        }
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "tool_calls": [
+    {
+      "round": 1,
+      "id": "call_QCwMUOiufL0DJDmBjDFEmRfa",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Brightwater\", \"field\": \"water_use_2025\"}",
+      "arguments": {
+        "entity": "Brightwater",
+        "field": "water_use_2025"
+      },
+      "result": {
+        "value": 3315.0,
+        "unit": "megalitres",
+        "year": 2025,
+        "sources": [
+          "NR-05"
+        ]
+      },
+      "seconds": 0.0003538000019034371
+    },
+    {
+      "round": 1,
+      "id": "call_43cvBuGKSEPfZKQ7KkR67gzQ",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Millbrook\", \"field\": \"water_use_2025\"}",
+      "arguments": {
+        "entity": "Millbrook",
+        "field": "water_use_2025"
+      },
+      "result": {
+        "value": 2806.0,
+        "unit": "megalitres",
+        "year": 2025,
+        "sources": [
+          "NR-11"
+        ]
+      },
+      "seconds": 0.0001640999980736524
+    },
+    {
+      "round": 1,
+      "id": "call_Sx5aIObF94t8y5bYt399KDMz",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Region\", \"field\": \"water_tariff_2025\"}",
+      "arguments": {
+        "entity": "Region",
+        "field": "water_tariff_2025"
+      },
+      "result": {
+        "value": 142.35,
+        "unit": "tenge per cubic metre",
+        "year": 2025,
+        "sources": [
+          "NR-15"
+        ]
+      },
+      "seconds": 0.0003696999920066446
+    },
+    {
+      "round": 2,
+      "id": "call_iDmgYTvrcCFhNdIQITO8Y9KO",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Region\", \"field\": \"megalitre_to_cubic_metres\"}",
+      "arguments": {
+        "entity": "Region",
+        "field": "megalitre_to_cubic_metres"
+      },
+      "result": {
+        "value": 1000,
+        "unit": "cubic metres per megalitre",
+        "year": null,
+        "sources": [
+          "NR-15"
+        ]
+      },
+      "seconds": 0.0003696999920066446
+    },
+    {
+      "round": 2,
+      "id": "call_ID8Pwr7FAgxwmQ8pthjIPjmR",
+      "name": "calculate",
+      "raw_arguments": "{\"expression\": \"(3315-2806)*1000*142.35/1000000\"}",
+      "arguments": {
+        "expression": "(3315-2806)*1000*142.35/1000000"
+      },
+      "result": {
+        "result": 72.45615
+      },
+      "seconds": 7.2900002123788e-05
+    }
+  ],
+  "errors": [],
+  "input_tokens": 2153,
+  "output_tokens": 186,
+  "cached_input_tokens": 0,
+  "rounds": 3,
+  "status": "answered",
+  "answer": "Brightwater's households paid more, by **72.46 million tenge**.\n\nANSWER: Brightwater | 72.46",
+  "seconds": 6.1292874999926426
+}

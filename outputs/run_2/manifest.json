@@ -1,0 +1,27 @@
+{
+  "run": 2,
+  "created_utc": "2026-10-26T14:39:09.642034+00:00",
+  "model": "gpt-5.6-luna",
+  "reasoning_effort": "none",
+  "temperature": 0.7,
+  "k": 5,
+  "max_rounds": 10,
+  "order": "Questions in file order; S1 then S2 then S3 for each question.",
+  "pricing": {
+    "input_per_million": 0.2,
+    "cached_input_per_million": 0.02,
+    "output_per_million": 1.2,
+    "source": "https://developers.openai.com/api/docs/models/gpt-5.6-luna",
+    "verified_date": "2026-10-26",
+    "note": "Estimated standard token cost before taxes or credits."
+  },
+  "file_hashes": {
+    "strategies.py": "4755e993688b06d1ee91c8e29682e90590ec040317cd46cea663ee4af4f72d28",
+    "evaluation.py": "f9a428a35d63b857446b07a01dec39d1cc740ceeb8950f03c37d85a00e8282f2",
+    "tools.py": "e3a0d177bf2bdb6b0f662507ad8276abc163d574008cf11517e1bae1bb63425b",
+    "tool_definitions.json": "d66b3bcbc6a2b9e92ae9810ce0f860891ab61a9b6ead4d35c8b85c66e7fb2495",
+    "run.py": "408ba9dabe4296f4a301755048213a4bc4ca96b2c3c44ba6dcc594214a3f3e86",
+    "data/corpus.jsonl": "b161ba17a7d9245149e13256232d7495db47e5777ebfc93e8d62e993272aa65d",
+    "data/questions.json": "9255e6a72fb695e3de26c604ef09ad646d450e0b894ba96f195cb6d6c77b5479"
+  }
+}

@@ -1,0 +1,531 @@
+{
+  "model": "gpt-5.6-luna",
+  "strategy": "S3",
+  "question": "At the 2025 household water tariff, which district's households paid more for water per resident in 2025, Harrowfield or Ossbridge, and by how many tenge per resident?",
+  "decimals": 0,
+  "settings": {
+    "reasoning_effort": "none",
+    "temperature": 0.7,
+    "max_rounds": 10,
+    "k": 1,
+    "vague_lookup": false
+  },
+  "tool_definitions": [
+    {
+      "type": "function",
+      "function": {
+        "name": "lookup",
+        "description": "Retrieve one factual field about a Nine Rivers district, or a regional water fact using entity Region. Returns the value, unit, relevant year, and source document IDs. Uses current profiles, excludes archived profiles, and applies correction notices. Use calculate for arithmetic.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "entity": {
+              "type": "string",
+              "description": "Exact district name, or Region for the regional water tariff and unit conversion."
+            },
+            "field": {
+              "type": "string",
+              "enum": [
+                "population_2020",
+                "population_2025",
+                "area_km2",
+                "budget_2025_million_tenge",
+                "water_use_2025",
+                "schools",
+                "pupils_2025_26",
+                "paved_road_km",
+                "founded_year",
+                "water_tariff_2025",
+                "megalitre_to_cubic_metres"
+              ],
+              "description": "The requested fact. Water use retains its original unit. The water tariff and conversion fields require entity Region."
+            }
+          },
+          "required": [
+            "entity",
+            "field"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "calculate",
+        "description": "Safely evaluate an arithmetic expression using numeric literals, parentheses, addition, subtraction, multiplication, division, and unary plus or minus. Returns a numeric result without rounding intermediate values. Rejects powers, names, function calls, attribute access, division by zero, and excessive expressions. Expressions are limited to 200 characters and 100 AST nodes; numeric magnitudes must not exceed 1000000000000000.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "expression": {
+              "type": "string",
+              "description": "Arithmetic expression to evaluate, for example 44675 / 921.4.",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": [
+            "expression"
+          ],
+          "additionalProperties": false
+        }
+      }
+    }
+  ],
+  "conversations": [
+    {
+      "sample": 1,
+      "messages": [
+        {
+          "role": "system",
+          "content": "Answer questions about the fictional Nine Rivers Region.\nUse only the supplied documents or facts returned by tools.\nRespect correction notices, years, and units.\nDo not invent facts.\nKeep intermediate precision and round only the final result.\nEnd with exactly:\nANSWER: <name or yes/no> | <number>\nUse lookup to retrieve facts and calculate to perform arithmetic."
+        },
+        {
+          "role": "user",
+          "content": "At the 2025 household water tariff, which district's households paid more for water per resident in 2025, Harrowfield or Ossbridge, and by how many tenge per resident?\nRound the final number to 0 decimal places."
+        },
+        {
+          "role": "assistant",
+          "annotations": [],
+          "tool_calls": [
+            {
+              "id": "call_HJohWi3xmQMUVm7X9NR9mrZs",
+              "function": {
+                "arguments": "{\"entity\": \"Harrowfield\", \"field\": \"water_use_2025\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_FSlzyCqDmIrkPG9OKFrxGxLH",
+              "function": {
+                "arguments": "{\"entity\": \"Harrowfield\", \"field\": \"population_2025\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_V8ACCoDmfc72w5B2kLmFttAr",
+              "function": {
+                "arguments": "{\"entity\": \"Ossbridge\", \"field\": \"water_use_2025\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_gIYaI59oPF48jaVqcL64YOOn",
+              "function": {
+                "arguments": "{\"entity\": \"Ossbridge\", \"field\": \"population_2025\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_pVrGStLCpnLtFbfvlnR0QxQD",
+              "function": {
+                "arguments": "{\"entity\": \"Region\", \"field\": \"water_tariff_2025\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_HJohWi3xmQMUVm7X9NR9mrZs",
+          "content": "{\"value\": 7146.0, \"unit\": \"megalitres\", \"year\": 2025, \"sources\": [\"NR-07\"]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_FSlzyCqDmIrkPG9OKFrxGxLH",
+          "content": "{\"value\": 90212, \"unit\": \"residents\", \"year\": 2025, \"sources\": [\"NR-07\"]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_V8ACCoDmfc72w5B2kLmFttAr",
+          "content": "{\"value\": 3862.0, \"unit\": \"megalitres\", \"year\": 2025, \"sources\": [\"NR-01\"]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_gIYaI59oPF48jaVqcL64YOOn",
+          "content": "{\"value\": 52904, \"unit\": \"residents\", \"year\": 2025, \"sources\": [\"NR-01\"]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_pVrGStLCpnLtFbfvlnR0QxQD",
+          "content": "{\"value\": 142.35, \"unit\": \"tenge per cubic metre\", \"year\": 2025, \"sources\": [\"NR-15\"]}"
+        },
+        {
+          "role": "assistant",
+          "annotations": [],
+          "tool_calls": [
+            {
+              "id": "call_9eA7Xxbo1K2UfKz5uLnP1CPc",
+              "function": {
+                "arguments": "{\"entity\": \"Region\", \"field\": \"megalitre_to_cubic_metres\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_9eA7Xxbo1K2UfKz5uLnP1CPc",
+          "content": "{\"value\": 1000, \"unit\": \"cubic metres per megalitre\", \"year\": null, \"sources\": [\"NR-15\"]}"
+        },
+        {
+          "role": "assistant",
+          "annotations": [],
+          "tool_calls": [
+            {
+              "id": "call_21xfoB1IGSywJ7yFYcZb0Ajy",
+              "function": {
+                "arguments": "{\"expression\": \"7146*1000*142.35/90212\"}",
+                "name": "calculate"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_L3xjWzCUOTzXE91StaBq5c4T",
+              "function": {
+                "arguments": "{\"expression\": \"3862*1000*142.35/52904\"}",
+                "name": "calculate"
+              },
+              "type": "function"
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_21xfoB1IGSywJ7yFYcZb0Ajy",
+          "content": "{\"result\": 11276.028687979426}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_L3xjWzCUOTzXE91StaBq5c4T",
+          "content": "{\"result\": 10391.571525782549}"
+        },
+        {
+          "role": "assistant",
+          "annotations": [],
+          "tool_calls": [
+            {
+              "id": "call_LZrzgUQiGsgZjpghk0pjD4Ck",
+              "function": {
+                "arguments": "{\"expression\":\"7146*1000*142.35/90212-3862*1000*142.35/52904\"}",
+                "name": "calculate"
+              },
+              "type": "function"
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_LZrzgUQiGsgZjpghk0pjD4Ck",
+          "content": "{\"result\": 884.4571621968771}"
+        },
+        {
+          "content": "Harrowfield households paid more: **884 tenge per resident** more than Ossbridge.\n\nANSWER: Harrowfield | 884",
+          "role": "assistant",
+          "annotations": []
+        }
+      ]
+    }
+  ],
+  "api_calls": [
+    {
+      "sample": 1,
+      "round": 1,
+      "response_id": "chatcmpl-EdGFrRy7FZziwVZgTnz5gvMCDgsgF",
+      "seconds": 3.0685898999945493,
+      "usage": {
+        "completion_tokens": 131,
+        "prompt_tokens": 545,
+        "total_tokens": 676,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "text_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "image_tokens": null,
+          "text_tokens": null
+        }
+      },
+      "finish_reason": "tool_calls"
+    },
+    {
+      "sample": 1,
+      "round": 2,
+      "response_id": "chatcmpl-EdGFuEIABQxORk8SeA1yRqfmEcmLv",
+      "seconds": 1.6552335000014864,
+      "usage": {
+        "completion_tokens": 43,
+        "prompt_tokens": 852,
+        "total_tokens": 895,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "text_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "image_tokens": null,
+          "text_tokens": null
+        }
+      },
+      "finish_reason": "tool_calls"
+    },
+    {
+      "sample": 1,
+      "round": 3,
+      "response_id": "chatcmpl-EdGFvUa0neUS1EHphvi4ofR1rebGG",
+      "seconds": 2.1864874999882886,
+      "usage": {
+        "completion_tokens": 67,
+        "prompt_tokens": 922,
+        "total_tokens": 989,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "text_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "image_tokens": null,
+          "text_tokens": null
+        }
+      },
+      "finish_reason": "tool_calls"
+    },
+    {
+      "sample": 1,
+      "round": 4,
+      "response_id": "chatcmpl-EdGFx0aekCi48KRD27cybj3drzZZ2",
+      "seconds": 1.9136282999970717,
+      "usage": {
+        "completion_tokens": 40,
+        "prompt_tokens": 1027,
+        "total_tokens": 1067,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "text_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 1024,
+          "cached_tokens": 0,
+          "image_tokens": null,
+          "text_tokens": null
+        }
+      },
+      "finish_reason": "tool_calls"
+    },
+    {
+      "sample": 1,
+      "round": 5,
+      "response_id": "chatcmpl-EdGG0eZKtia9SCijhpbX3byMCMQCK",
+      "seconds": 3.6487125999992713,
+      "usage": {
+        "completion_tokens": 30,
+        "prompt_tokens": 1089,
+        "total_tokens": 1119,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "text_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 62,
+          "cached_tokens": 1024,
+          "image_tokens": null,
+          "text_tokens": null
+        }
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "tool_calls": [
+    {
+      "round": 1,
+      "id": "call_HJohWi3xmQMUVm7X9NR9mrZs",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Harrowfield\", \"field\": \"water_use_2025\"}",
+      "arguments": {
+        "entity": "Harrowfield",
+        "field": "water_use_2025"
+      },
+      "result": {
+        "value": 7146.0,
+        "unit": "megalitres",
+        "year": 2025,
+        "sources": [
+          "NR-07"
+        ]
+      },
+      "seconds": 0.00038910000876057893
+    },
+    {
+      "round": 1,
+      "id": "call_FSlzyCqDmIrkPG9OKFrxGxLH",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Harrowfield\", \"field\": \"population_2025\"}",
+      "arguments": {
+        "entity": "Harrowfield",
+        "field": "population_2025"
+      },
+      "result": {
+        "value": 90212,
+        "unit": "residents",
+        "year": 2025,
+        "sources": [
+          "NR-07"
+        ]
+      },
+      "seconds": 0.00020670000230893493
+    },
+    {
+      "round": 1,
+      "id": "call_V8ACCoDmfc72w5B2kLmFttAr",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Ossbridge\", \"field\": \"water_use_2025\"}",
+      "arguments": {
+        "entity": "Ossbridge",
+        "field": "water_use_2025"
+      },
+      "result": {
+        "value": 3862.0,
+        "unit": "megalitres",
+        "year": 2025,
+        "sources": [
+          "NR-01"
+        ]
+      },
+      "seconds": 0.000155699992319569
+    },
+    {
+      "round": 1,
+      "id": "call_gIYaI59oPF48jaVqcL64YOOn",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Ossbridge\", \"field\": \"population_2025\"}",
+      "arguments": {
+        "entity": "Ossbridge",
+        "field": "population_2025"
+      },
+      "result": {
+        "value": 52904,
+        "unit": "residents",
+        "year": 2025,
+        "sources": [
+          "NR-01"
+        ]
+      },
+      "seconds": 0.00015969999367371202
+    },
+    {
+      "round": 1,
+      "id": "call_pVrGStLCpnLtFbfvlnR0QxQD",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Region\", \"field\": \"water_tariff_2025\"}",
+      "arguments": {
+        "entity": "Region",
+        "field": "water_tariff_2025"
+      },
+      "result": {
+        "value": 142.35,
+        "unit": "tenge per cubic metre",
+        "year": 2025,
+        "sources": [
+          "NR-15"
+        ]
+      },
+      "seconds": 0.0001784999913070351
+    },
+    {
+      "round": 2,
+      "id": "call_9eA7Xxbo1K2UfKz5uLnP1CPc",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Region\", \"field\": \"megalitre_to_cubic_metres\"}",
+      "arguments": {
+        "entity": "Region",
+        "field": "megalitre_to_cubic_metres"
+      },
+      "result": {
+        "value": 1000,
+        "unit": "cubic metres per megalitre",
+        "year": null,
+        "sources": [
+          "NR-15"
+        ]
+      },
+      "seconds": 0.00038189999759197235
+    },
+    {
+      "round": 3,
+      "id": "call_21xfoB1IGSywJ7yFYcZb0Ajy",
+      "name": "calculate",
+      "raw_arguments": "{\"expression\": \"7146*1000*142.35/90212\"}",
+      "arguments": {
+        "expression": "7146*1000*142.35/90212"
+      },
+      "result": {
+        "result": 11276.028687979426
+      },
+      "seconds": 0.00011130000348202884
+    },
+    {
+      "round": 3,
+      "id": "call_L3xjWzCUOTzXE91StaBq5c4T",
+      "name": "calculate",
+      "raw_arguments": "{\"expression\": \"3862*1000*142.35/52904\"}",
+      "arguments": {
+        "expression": "3862*1000*142.35/52904"
+      },
+      "result": {
+        "result": 10391.571525782549
+      },
+      "seconds": 5.400000372901559e-05
+    },
+    {
+      "round": 4,
+      "id": "call_LZrzgUQiGsgZjpghk0pjD4Ck",
+      "name": "calculate",
+      "raw_arguments": "{\"expression\":\"7146*1000*142.35/90212-3862*1000*142.35/52904\"}",
+      "arguments": {
+        "expression": "7146*1000*142.35/90212-3862*1000*142.35/52904"
+      },
+      "result": {
+        "result": 884.4571621968771
+      },
+      "seconds": 0.00014620000729337335
+    }
+  ],
+  "errors": [],
+  "input_tokens": 4435,
+  "output_tokens": 311,
+  "cached_input_tokens": 1024,
+  "rounds": 5,
+  "status": "answered",
+  "answer": "Harrowfield households paid more: **884 tenge per resident** more than Ossbridge.\n\nANSWER: Harrowfield | 884",
+  "seconds": 12.48866370000178
+}

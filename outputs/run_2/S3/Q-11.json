@@ -1,0 +1,525 @@
+{
+  "model": "gpt-5.6-luna",
+  "strategy": "S3",
+  "question": "Of Redfen, Ashgrove and Millbrook, which district has the fewest pupils per school in 2025/26, and how many pupils per school separate the highest of the three from the lowest?",
+  "decimals": 2,
+  "settings": {
+    "reasoning_effort": "none",
+    "temperature": 0.7,
+    "max_rounds": 10,
+    "k": 1,
+    "vague_lookup": false
+  },
+  "tool_definitions": [
+    {
+      "type": "function",
+      "function": {
+        "name": "lookup",
+        "description": "Retrieve one factual field about a Nine Rivers district, or a regional water fact using entity Region. Returns the value, unit, relevant year, and source document IDs. Uses current profiles, excludes archived profiles, and applies correction notices. Use calculate for arithmetic.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "entity": {
+              "type": "string",
+              "description": "Exact district name, or Region for the regional water tariff and unit conversion."
+            },
+            "field": {
+              "type": "string",
+              "enum": [
+                "population_2020",
+                "population_2025",
+                "area_km2",
+                "budget_2025_million_tenge",
+                "water_use_2025",
+                "schools",
+                "pupils_2025_26",
+                "paved_road_km",
+                "founded_year",
+                "water_tariff_2025",
+                "megalitre_to_cubic_metres"
+              ],
+              "description": "The requested fact. Water use retains its original unit. The water tariff and conversion fields require entity Region."
+            }
+          },
+          "required": [
+            "entity",
+            "field"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "calculate",
+        "description": "Safely evaluate an arithmetic expression using numeric literals, parentheses, addition, subtraction, multiplication, division, and unary plus or minus. Returns a numeric result without rounding intermediate values. Rejects powers, names, function calls, attribute access, division by zero, and excessive expressions. Expressions are limited to 200 characters and 100 AST nodes; numeric magnitudes must not exceed 1000000000000000.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "expression": {
+              "type": "string",
+              "description": "Arithmetic expression to evaluate, for example 44675 / 921.4.",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": [
+            "expression"
+          ],
+          "additionalProperties": false
+        }
+      }
+    }
+  ],
+  "conversations": [
+    {
+      "sample": 1,
+      "messages": [
+        {
+          "role": "system",
+          "content": "Answer questions about the fictional Nine Rivers Region.\nUse only the supplied documents or facts returned by tools.\nRespect correction notices, years, and units.\nDo not invent facts.\nKeep intermediate precision and round only the final result.\nEnd with exactly:\nANSWER: <name or yes/no> | <number>\nUse lookup to retrieve facts and calculate to perform arithmetic."
+        },
+        {
+          "role": "user",
+          "content": "Of Redfen, Ashgrove and Millbrook, which district has the fewest pupils per school in 2025/26, and how many pupils per school separate the highest of the three from the lowest?\nRound the final number to 2 decimal places."
+        },
+        {
+          "role": "assistant",
+          "annotations": [],
+          "tool_calls": [
+            {
+              "id": "call_Go7vTfITyhpC2mEl4FyLVRgq",
+              "function": {
+                "arguments": "{\"entity\": \"Redfen\", \"field\": \"pupils_2025_26\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_a1mveXq4mGGUxGUB4mHReza5",
+              "function": {
+                "arguments": "{\"entity\": \"Redfen\", \"field\": \"schools\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_5dw9sKuaEESYDm6CvJfHHMp1",
+              "function": {
+                "arguments": "{\"entity\": \"Ashgrove\", \"field\": \"pupils_2025_26\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_oo3EyCv3p8Ps1BsCeuLmcxRq",
+              "function": {
+                "arguments": "{\"entity\": \"Ashgrove\", \"field\": \"schools\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_G9Vjb1AnEIT70EUPfbvxUG13",
+              "function": {
+                "arguments": "{\"entity\": \"Millbrook\", \"field\": \"pupils_2025_26\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_IdL4k3JlBFlXjFp2ccW7N8xc",
+              "function": {
+                "arguments": "{\"entity\": \"Millbrook\", \"field\": \"schools\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_Go7vTfITyhpC2mEl4FyLVRgq",
+          "content": "{\"value\": 3147, \"unit\": \"pupils\", \"year\": \"2025/26\", \"sources\": [\"NR-09\"]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_a1mveXq4mGGUxGUB4mHReza5",
+          "content": "{\"value\": 10, \"unit\": \"schools\", \"year\": 2025, \"sources\": [\"NR-09\"]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_5dw9sKuaEESYDm6CvJfHHMp1",
+          "content": "{\"value\": 8837, \"unit\": \"pupils\", \"year\": \"2025/26\", \"sources\": [\"NR-10\"]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_oo3EyCv3p8Ps1BsCeuLmcxRq",
+          "content": "{\"value\": 24, \"unit\": \"schools\", \"year\": 2025, \"sources\": [\"NR-10\"]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_G9Vjb1AnEIT70EUPfbvxUG13",
+          "content": "{\"value\": 5562, \"unit\": \"pupils\", \"year\": \"2025/26\", \"sources\": [\"NR-11\"]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_IdL4k3JlBFlXjFp2ccW7N8xc",
+          "content": "{\"value\": 15, \"unit\": \"schools\", \"year\": 2025, \"sources\": [\"NR-11\"]}"
+        },
+        {
+          "role": "assistant",
+          "annotations": [],
+          "tool_calls": [
+            {
+              "id": "call_ERY7aLI0vr5jaaCZzbxGVFZX",
+              "function": {
+                "arguments": "{\"expression\": \"3147 / 10\"}",
+                "name": "calculate"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_6j7MyNa5g8HTf7gBzeBM0Mnc",
+              "function": {
+                "arguments": "{\"expression\": \"8837 / 24\"}",
+                "name": "calculate"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_e819SjsWaa6Vc6DVjvw6VoSQ",
+              "function": {
+                "arguments": "{\"expression\": \"5562 / 15\"}",
+                "name": "calculate"
+              },
+              "type": "function"
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_ERY7aLI0vr5jaaCZzbxGVFZX",
+          "content": "{\"result\": 314.7}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_6j7MyNa5g8HTf7gBzeBM0Mnc",
+          "content": "{\"result\": 368.2083333333333}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_e819SjsWaa6Vc6DVjvw6VoSQ",
+          "content": "{\"result\": 370.8}"
+        },
+        {
+          "role": "assistant",
+          "annotations": [],
+          "tool_calls": [
+            {
+              "id": "call_JoIGf8yY6AFTfGEzzpT2ztd3",
+              "function": {
+                "arguments": "{\"expression\":\"370.8 - 314.7\"}",
+                "name": "calculate"
+              },
+              "type": "function"
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_JoIGf8yY6AFTfGEzzpT2ztd3",
+          "content": "{\"result\": 56.10000000000002}"
+        },
+        {
+          "content": "Redfen has the fewest pupils per school (314.7). The difference between the highest (Millbrook, 370.8) and lowest is 56.10 pupils per school.\n\nANSWER: Redfen | 56.10",
+          "role": "assistant",
+          "annotations": []
+        }
+      ]
+    }
+  ],
+  "api_calls": [
+    {
+      "sample": 1,
+      "round": 1,
+      "response_id": "chatcmpl-EdGDEDDBt8Ig0X9OzMjMh5qcmbl58",
+      "seconds": 6.402238099995884,
+      "usage": {
+        "completion_tokens": 150,
+        "prompt_tokens": 548,
+        "total_tokens": 698,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "text_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "image_tokens": null,
+          "text_tokens": null
+        }
+      },
+      "finish_reason": "tool_calls"
+    },
+    {
+      "sample": 1,
+      "round": 2,
+      "response_id": "chatcmpl-EdGDI3Fpgi0v8x4mkfOjwgcsvBda9",
+      "seconds": 4.125744799996028,
+      "usage": {
+        "completion_tokens": 70,
+        "prompt_tokens": 895,
+        "total_tokens": 965,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "text_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "image_tokens": null,
+          "text_tokens": null
+        }
+      },
+      "finish_reason": "tool_calls"
+    },
+    {
+      "sample": 1,
+      "round": 3,
+      "response_id": "chatcmpl-EdGDNePdnCeeMm6kpSr3R3FmNXsyZ",
+      "seconds": 1.6144003000081284,
+      "usage": {
+        "completion_tokens": 23,
+        "prompt_tokens": 1007,
+        "total_tokens": 1030,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "text_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "image_tokens": null,
+          "text_tokens": null
+        }
+      },
+      "finish_reason": "tool_calls"
+    },
+    {
+      "sample": 1,
+      "round": 4,
+      "response_id": "chatcmpl-EdGDOriXhnK4H9vRqNOmUh0ALohDI",
+      "seconds": 3.382155999992392,
+      "usage": {
+        "completion_tokens": 51,
+        "prompt_tokens": 1052,
+        "total_tokens": 1103,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "text_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 1049,
+          "image_tokens": null,
+          "text_tokens": null
+        }
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "tool_calls": [
+    {
+      "round": 1,
+      "id": "call_Go7vTfITyhpC2mEl4FyLVRgq",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Redfen\", \"field\": \"pupils_2025_26\"}",
+      "arguments": {
+        "entity": "Redfen",
+        "field": "pupils_2025_26"
+      },
+      "result": {
+        "value": 3147,
+        "unit": "pupils",
+        "year": "2025/26",
+        "sources": [
+          "NR-09"
+        ]
+      },
+      "seconds": 0.00024530000519007444
+    },
+    {
+      "round": 1,
+      "id": "call_a1mveXq4mGGUxGUB4mHReza5",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Redfen\", \"field\": \"schools\"}",
+      "arguments": {
+        "entity": "Redfen",
+        "field": "schools"
+      },
+      "result": {
+        "value": 10,
+        "unit": "schools",
+        "year": 2025,
+        "sources": [
+          "NR-09"
+        ]
+      },
+      "seconds": 0.0002918999962275848
+    },
+    {
+      "round": 1,
+      "id": "call_5dw9sKuaEESYDm6CvJfHHMp1",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Ashgrove\", \"field\": \"pupils_2025_26\"}",
+      "arguments": {
+        "entity": "Ashgrove",
+        "field": "pupils_2025_26"
+      },
+      "result": {
+        "value": 8837,
+        "unit": "pupils",
+        "year": "2025/26",
+        "sources": [
+          "NR-10"
+        ]
+      },
+      "seconds": 0.00020209999638609588
+    },
+    {
+      "round": 1,
+      "id": "call_oo3EyCv3p8Ps1BsCeuLmcxRq",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Ashgrove\", \"field\": \"schools\"}",
+      "arguments": {
+        "entity": "Ashgrove",
+        "field": "schools"
+      },
+      "result": {
+        "value": 24,
+        "unit": "schools",
+        "year": 2025,
+        "sources": [
+          "NR-10"
+        ]
+      },
+      "seconds": 0.000192299994523637
+    },
+    {
+      "round": 1,
+      "id": "call_G9Vjb1AnEIT70EUPfbvxUG13",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Millbrook\", \"field\": \"pupils_2025_26\"}",
+      "arguments": {
+        "entity": "Millbrook",
+        "field": "pupils_2025_26"
+      },
+      "result": {
+        "value": 5562,
+        "unit": "pupils",
+        "year": "2025/26",
+        "sources": [
+          "NR-11"
+        ]
+      },
+      "seconds": 0.0002766999969026074
+    },
+    {
+      "round": 1,
+      "id": "call_IdL4k3JlBFlXjFp2ccW7N8xc",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Millbrook\", \"field\": \"schools\"}",
+      "arguments": {
+        "entity": "Millbrook",
+        "field": "schools"
+      },
+      "result": {
+        "value": 15,
+        "unit": "schools",
+        "year": 2025,
+        "sources": [
+          "NR-11"
+        ]
+      },
+      "seconds": 0.00019290001364424825
+    },
+    {
+      "round": 2,
+      "id": "call_ERY7aLI0vr5jaaCZzbxGVFZX",
+      "name": "calculate",
+      "raw_arguments": "{\"expression\": \"3147 / 10\"}",
+      "arguments": {
+        "expression": "3147 / 10"
+      },
+      "result": {
+        "result": 314.7
+      },
+      "seconds": 9.390000195708126e-05
+    },
+    {
+      "round": 2,
+      "id": "call_6j7MyNa5g8HTf7gBzeBM0Mnc",
+      "name": "calculate",
+      "raw_arguments": "{\"expression\": \"8837 / 24\"}",
+      "arguments": {
+        "expression": "8837 / 24"
+      },
+      "result": {
+        "result": 368.2083333333333
+      },
+      "seconds": 5.18000015290454e-05
+    },
+    {
+      "round": 2,
+      "id": "call_e819SjsWaa6Vc6DVjvw6VoSQ",
+      "name": "calculate",
+      "raw_arguments": "{\"expression\": \"5562 / 15\"}",
+      "arguments": {
+        "expression": "5562 / 15"
+      },
+      "result": {
+        "result": 370.8
+      },
+      "seconds": 4.050000279676169e-05
+    },
+    {
+      "round": 3,
+      "id": "call_JoIGf8yY6AFTfGEzzpT2ztd3",
+      "name": "calculate",
+      "raw_arguments": "{\"expression\":\"370.8 - 314.7\"}",
+      "arguments": {
+        "expression": "370.8 - 314.7"
+      },
+      "result": {
+        "result": 56.10000000000002
+      },
+      "seconds": 0.00014740000187885016
+    }
+  ],
+  "errors": [],
+  "input_tokens": 3502,
+  "output_tokens": 294,
+  "cached_input_tokens": 1049,
+  "rounds": 4,
+  "status": "answered",
+  "answer": "Redfen has the fewest pupils per school (314.7). The difference between the highest (Millbrook, 370.8) and lowest is 56.10 pupils per school.\n\nANSWER: Redfen | 56.10",
+  "seconds": 15.539574599999469
+}

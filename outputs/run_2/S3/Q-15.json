@@ -1,0 +1,435 @@
+{
+  "model": "gpt-5.6-luna",
+  "strategy": "S3",
+  "question": "Which district has more pupils per school in 2025/26, Kelmarsh or Redfen, and by how many pupils per school?",
+  "decimals": 2,
+  "settings": {
+    "reasoning_effort": "none",
+    "temperature": 0.7,
+    "max_rounds": 10,
+    "k": 1,
+    "vague_lookup": false
+  },
+  "tool_definitions": [
+    {
+      "type": "function",
+      "function": {
+        "name": "lookup",
+        "description": "Retrieve one factual field about a Nine Rivers district, or a regional water fact using entity Region. Returns the value, unit, relevant year, and source document IDs. Uses current profiles, excludes archived profiles, and applies correction notices. Use calculate for arithmetic.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "entity": {
+              "type": "string",
+              "description": "Exact district name, or Region for the regional water tariff and unit conversion."
+            },
+            "field": {
+              "type": "string",
+              "enum": [
+                "population_2020",
+                "population_2025",
+                "area_km2",
+                "budget_2025_million_tenge",
+                "water_use_2025",
+                "schools",
+                "pupils_2025_26",
+                "paved_road_km",
+                "founded_year",
+                "water_tariff_2025",
+                "megalitre_to_cubic_metres"
+              ],
+              "description": "The requested fact. Water use retains its original unit. The water tariff and conversion fields require entity Region."
+            }
+          },
+          "required": [
+            "entity",
+            "field"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "calculate",
+        "description": "Safely evaluate an arithmetic expression using numeric literals, parentheses, addition, subtraction, multiplication, division, and unary plus or minus. Returns a numeric result without rounding intermediate values. Rejects powers, names, function calls, attribute access, division by zero, and excessive expressions. Expressions are limited to 200 characters and 100 AST nodes; numeric magnitudes must not exceed 1000000000000000.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "expression": {
+              "type": "string",
+              "description": "Arithmetic expression to evaluate, for example 44675 / 921.4.",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": [
+            "expression"
+          ],
+          "additionalProperties": false
+        }
+      }
+    }
+  ],
+  "conversations": [
+    {
+      "sample": 1,
+      "messages": [
+        {
+          "role": "system",
+          "content": "Answer questions about the fictional Nine Rivers Region.\nUse only the supplied documents or facts returned by tools.\nRespect correction notices, years, and units.\nDo not invent facts.\nKeep intermediate precision and round only the final result.\nEnd with exactly:\nANSWER: <name or yes/no> | <number>\nUse lookup to retrieve facts and calculate to perform arithmetic."
+        },
+        {
+          "role": "user",
+          "content": "Which district has more pupils per school in 2025/26, Kelmarsh or Redfen, and by how many pupils per school?\nRound the final number to 2 decimal places."
+        },
+        {
+          "role": "assistant",
+          "annotations": [],
+          "tool_calls": [
+            {
+              "id": "call_sRCd8lxi8x0iPugat3Swgwac",
+              "function": {
+                "arguments": "{\"entity\": \"Kelmarsh\", \"field\": \"pupils_2025_26\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_ujoD5g28Hg8oQ7tvfHQfByEv",
+              "function": {
+                "arguments": "{\"entity\": \"Kelmarsh\", \"field\": \"schools\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_fObyoKdWCxIRvQhitXgXMxCk",
+              "function": {
+                "arguments": "{\"entity\": \"Redfen\", \"field\": \"pupils_2025_26\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_sGyLckArvDCxYSYt4qWoZWSa",
+              "function": {
+                "arguments": "{\"entity\": \"Redfen\", \"field\": \"schools\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_sRCd8lxi8x0iPugat3Swgwac",
+          "content": "{\"value\": 3268, \"unit\": \"pupils\", \"year\": \"2025/26\", \"sources\": [\"NR-04\"]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_ujoD5g28Hg8oQ7tvfHQfByEv",
+          "content": "{\"value\": 11, \"unit\": \"schools\", \"year\": 2025, \"sources\": [\"NR-04\"]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_fObyoKdWCxIRvQhitXgXMxCk",
+          "content": "{\"value\": 3147, \"unit\": \"pupils\", \"year\": \"2025/26\", \"sources\": [\"NR-09\"]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_sGyLckArvDCxYSYt4qWoZWSa",
+          "content": "{\"value\": 10, \"unit\": \"schools\", \"year\": 2025, \"sources\": [\"NR-09\"]}"
+        },
+        {
+          "role": "assistant",
+          "annotations": [],
+          "tool_calls": [
+            {
+              "id": "call_wluX9t0ag5RVKKkWl2nH9r1p",
+              "function": {
+                "arguments": "{\"expression\": \"3268 / 11\"}",
+                "name": "calculate"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_vaabuOj3d3tFzxLqTfrhdTiw",
+              "function": {
+                "arguments": "{\"expression\": \"3147 / 10\"}",
+                "name": "calculate"
+              },
+              "type": "function"
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_wluX9t0ag5RVKKkWl2nH9r1p",
+          "content": "{\"result\": 297.09090909090907}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_vaabuOj3d3tFzxLqTfrhdTiw",
+          "content": "{\"result\": 314.7}"
+        },
+        {
+          "role": "assistant",
+          "annotations": [],
+          "tool_calls": [
+            {
+              "id": "call_t4yvQE126ly9thlBsVP4wuid",
+              "function": {
+                "arguments": "{\"expression\":\"3147 / 10 - 3268 / 11\"}",
+                "name": "calculate"
+              },
+              "type": "function"
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_t4yvQE126ly9thlBsVP4wuid",
+          "content": "{\"result\": 17.609090909090924}"
+        },
+        {
+          "content": "Redfen has more pupils per school: 17.61 pupils per school.\n\nANSWER: Redfen | 17.61",
+          "role": "assistant",
+          "annotations": []
+        }
+      ]
+    }
+  ],
+  "api_calls": [
+    {
+      "sample": 1,
+      "round": 1,
+      "response_id": "chatcmpl-EdGExxAq5aK89tKjrUsccrIxwUUL2",
+      "seconds": 3.3609596000023885,
+      "usage": {
+        "completion_tokens": 107,
+        "prompt_tokens": 534,
+        "total_tokens": 641,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "text_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "image_tokens": null,
+          "text_tokens": null
+        }
+      },
+      "finish_reason": "tool_calls"
+    },
+    {
+      "sample": 1,
+      "round": 2,
+      "response_id": "chatcmpl-EdGF0omCZbpQ6bLNE7HRXl7OYIkK9",
+      "seconds": 1.9065597000007983,
+      "usage": {
+        "completion_tokens": 53,
+        "prompt_tokens": 777,
+        "total_tokens": 830,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "text_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "image_tokens": null,
+          "text_tokens": null
+        }
+      },
+      "finish_reason": "tool_calls"
+    },
+    {
+      "sample": 1,
+      "round": 3,
+      "response_id": "chatcmpl-EdGF2RnreUZnz9U1eShLM7QlqQSMd",
+      "seconds": 2.0272254000010435,
+      "usage": {
+        "completion_tokens": 27,
+        "prompt_tokens": 864,
+        "total_tokens": 891,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "text_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "image_tokens": null,
+          "text_tokens": null
+        }
+      },
+      "finish_reason": "tool_calls"
+    },
+    {
+      "sample": 1,
+      "round": 4,
+      "response_id": "chatcmpl-EdGF4dl0rhiZI2WWW5sQxOXaz5KgD",
+      "seconds": 1.4185368000034941,
+      "usage": {
+        "completion_tokens": 28,
+        "prompt_tokens": 913,
+        "total_tokens": 941,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "text_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "image_tokens": null,
+          "text_tokens": null
+        }
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "tool_calls": [
+    {
+      "round": 1,
+      "id": "call_sRCd8lxi8x0iPugat3Swgwac",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Kelmarsh\", \"field\": \"pupils_2025_26\"}",
+      "arguments": {
+        "entity": "Kelmarsh",
+        "field": "pupils_2025_26"
+      },
+      "result": {
+        "value": 3268,
+        "unit": "pupils",
+        "year": "2025/26",
+        "sources": [
+          "NR-04"
+        ]
+      },
+      "seconds": 0.00046019999717827886
+    },
+    {
+      "round": 1,
+      "id": "call_ujoD5g28Hg8oQ7tvfHQfByEv",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Kelmarsh\", \"field\": \"schools\"}",
+      "arguments": {
+        "entity": "Kelmarsh",
+        "field": "schools"
+      },
+      "result": {
+        "value": 11,
+        "unit": "schools",
+        "year": 2025,
+        "sources": [
+          "NR-04"
+        ]
+      },
+      "seconds": 0.00015110000094864517
+    },
+    {
+      "round": 1,
+      "id": "call_fObyoKdWCxIRvQhitXgXMxCk",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Redfen\", \"field\": \"pupils_2025_26\"}",
+      "arguments": {
+        "entity": "Redfen",
+        "field": "pupils_2025_26"
+      },
+      "result": {
+        "value": 3147,
+        "unit": "pupils",
+        "year": "2025/26",
+        "sources": [
+          "NR-09"
+        ]
+      },
+      "seconds": 0.00030280000646598637
+    },
+    {
+      "round": 1,
+      "id": "call_sGyLckArvDCxYSYt4qWoZWSa",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Redfen\", \"field\": \"schools\"}",
+      "arguments": {
+        "entity": "Redfen",
+        "field": "schools"
+      },
+      "result": {
+        "value": 10,
+        "unit": "schools",
+        "year": 2025,
+        "sources": [
+          "NR-09"
+        ]
+      },
+      "seconds": 0.0002736000024015084
+    },
+    {
+      "round": 2,
+      "id": "call_wluX9t0ag5RVKKkWl2nH9r1p",
+      "name": "calculate",
+      "raw_arguments": "{\"expression\": \"3268 / 11\"}",
+      "arguments": {
+        "expression": "3268 / 11"
+      },
+      "result": {
+        "result": 297.09090909090907
+      },
+      "seconds": 0.00012739999510813504
+    },
+    {
+      "round": 2,
+      "id": "call_vaabuOj3d3tFzxLqTfrhdTiw",
+      "name": "calculate",
+      "raw_arguments": "{\"expression\": \"3147 / 10\"}",
+      "arguments": {
+        "expression": "3147 / 10"
+      },
+      "result": {
+        "result": 314.7
+      },
+      "seconds": 4.6899993321858346e-05
+    },
+    {
+      "round": 3,
+      "id": "call_t4yvQE126ly9thlBsVP4wuid",
+      "name": "calculate",
+      "raw_arguments": "{\"expression\":\"3147 / 10 - 3268 / 11\"}",
+      "arguments": {
+        "expression": "3147 / 10 - 3268 / 11"
+      },
+      "result": {
+        "result": 17.609090909090924
+      },
+      "seconds": 8.959999831859022e-05
+    }
+  ],
+  "errors": [],
+  "input_tokens": 3088,
+  "output_tokens": 215,
+  "cached_input_tokens": 0,
+  "rounds": 4,
+  "status": "answered",
+  "answer": "Redfen has more pupils per school: 17.61 pupils per school.\n\nANSWER: Redfen | 17.61",
+  "seconds": 8.725174999999581
+}
