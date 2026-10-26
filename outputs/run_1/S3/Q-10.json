@@ -1,0 +1,287 @@
+{
+  "model": "gpt-5.6-luna",
+  "strategy": "S3",
+  "question": "Which district is older, Stonecairn or Coldharbour, and how many years older is it than the other?",
+  "decimals": 0,
+  "settings": {
+    "reasoning_effort": "none",
+    "temperature": 0.7,
+    "max_rounds": 10,
+    "k": 1,
+    "vague_lookup": false
+  },
+  "tool_definitions": [
+    {
+      "type": "function",
+      "function": {
+        "name": "lookup",
+        "description": "Retrieve one factual field about a Nine Rivers district, or a regional water fact using entity Region. Returns the value, unit, relevant year, and source document IDs. Uses current profiles, excludes archived profiles, and applies correction notices. Use calculate for arithmetic.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "entity": {
+              "type": "string",
+              "description": "Exact district name, or Region for the regional water tariff and unit conversion."
+            },
+            "field": {
+              "type": "string",
+              "enum": [
+                "population_2020",
+                "population_2025",
+                "area_km2",
+                "budget_2025_million_tenge",
+                "water_use_2025",
+                "schools",
+                "pupils_2025_26",
+                "paved_road_km",
+                "founded_year",
+                "water_tariff_2025",
+                "megalitre_to_cubic_metres"
+              ],
+              "description": "The requested fact. Water use retains its original unit. The water tariff and conversion fields require entity Region."
+            }
+          },
+          "required": [
+            "entity",
+            "field"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "calculate",
+        "description": "Safely evaluate an arithmetic expression using numeric literals, parentheses, addition, subtraction, multiplication, division, and unary plus or minus. Returns a numeric result without rounding intermediate values. Rejects powers, names, function calls, attribute access, division by zero, and excessive expressions. Expressions are limited to 200 characters and 100 AST nodes; numeric magnitudes must not exceed 1000000000000000.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "expression": {
+              "type": "string",
+              "description": "Arithmetic expression to evaluate, for example 44675 / 921.4.",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": [
+            "expression"
+          ],
+          "additionalProperties": false
+        }
+      }
+    }
+  ],
+  "conversations": [
+    {
+      "sample": 1,
+      "messages": [
+        {
+          "role": "system",
+          "content": "Answer questions about the fictional Nine Rivers Region.\nUse only the supplied documents or facts returned by tools.\nRespect correction notices, years, and units.\nDo not invent facts.\nKeep intermediate precision and round only the final result.\nEnd with exactly:\nANSWER: <name or yes/no> | <number>\nUse lookup to retrieve facts and calculate to perform arithmetic."
+        },
+        {
+          "role": "user",
+          "content": "Which district is older, Stonecairn or Coldharbour, and how many years older is it than the other?\nRound the final number to 0 decimal places."
+        },
+        {
+          "role": "assistant",
+          "annotations": [],
+          "tool_calls": [
+            {
+              "id": "call_X85uRa3Y4ahT7ZdkGOZ8qCoQ",
+              "function": {
+                "arguments": "{\"entity\": \"Stonecairn\", \"field\": \"founded_year\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_9dMMYoSoxHXU7lpz8ZyvlYya",
+              "function": {
+                "arguments": "{\"entity\": \"Coldharbour\", \"field\": \"founded_year\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_X85uRa3Y4ahT7ZdkGOZ8qCoQ",
+          "content": "{\"value\": 1837, \"unit\": \"year\", \"year\": null, \"sources\": [\"NR-06\"]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_9dMMYoSoxHXU7lpz8ZyvlYya",
+          "content": "{\"value\": 1845, \"unit\": \"year\", \"year\": null, \"sources\": [\"NR-12\"]}"
+        },
+        {
+          "role": "assistant",
+          "annotations": [],
+          "tool_calls": [
+            {
+              "id": "call_cKw9CcYUJq2UPNBYlumMyGSe",
+              "function": {
+                "arguments": "{\"expression\":\"1845-1837\"}",
+                "name": "calculate"
+              },
+              "type": "function"
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_cKw9CcYUJq2UPNBYlumMyGSe",
+          "content": "{\"result\": 8.0}"
+        },
+        {
+          "content": "Stonecairn is older by 8 years.  \nANSWER: Stonecairn | 8",
+          "role": "assistant",
+          "annotations": []
+        }
+      ]
+    }
+  ],
+  "api_calls": [
+    {
+      "sample": 1,
+      "round": 1,
+      "response_id": "chatcmpl-EdG2krrPRQpdS60MibdkqFCUnmi4v",
+      "seconds": 3.629056400008267,
+      "usage": {
+        "completion_tokens": 62,
+        "prompt_tokens": 530,
+        "total_tokens": 592,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "text_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "image_tokens": null,
+          "text_tokens": null
+        }
+      },
+      "finish_reason": "tool_calls"
+    },
+    {
+      "sample": 1,
+      "round": 2,
+      "response_id": "chatcmpl-EdG2lqsOOvws59wFBuIycpmnnGbG2",
+      "seconds": 1.2324485999997705,
+      "usage": {
+        "completion_tokens": 20,
+        "prompt_tokens": 660,
+        "total_tokens": 680,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "text_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "image_tokens": null,
+          "text_tokens": null
+        }
+      },
+      "finish_reason": "tool_calls"
+    },
+    {
+      "sample": 1,
+      "round": 3,
+      "response_id": "chatcmpl-EdG2mIfX2nGboLMAHPp0VFymV3sVd",
+      "seconds": 1.804918000008911,
+      "usage": {
+        "completion_tokens": 24,
+        "prompt_tokens": 698,
+        "total_tokens": 722,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "text_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "image_tokens": null,
+          "text_tokens": null
+        }
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "tool_calls": [
+    {
+      "round": 1,
+      "id": "call_X85uRa3Y4ahT7ZdkGOZ8qCoQ",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Stonecairn\", \"field\": \"founded_year\"}",
+      "arguments": {
+        "entity": "Stonecairn",
+        "field": "founded_year"
+      },
+      "result": {
+        "value": 1837,
+        "unit": "year",
+        "year": null,
+        "sources": [
+          "NR-06"
+        ]
+      },
+      "seconds": 0.0008224999910453334
+    },
+    {
+      "round": 1,
+      "id": "call_9dMMYoSoxHXU7lpz8ZyvlYya",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Coldharbour\", \"field\": \"founded_year\"}",
+      "arguments": {
+        "entity": "Coldharbour",
+        "field": "founded_year"
+      },
+      "result": {
+        "value": 1845,
+        "unit": "year",
+        "year": null,
+        "sources": [
+          "NR-12"
+        ]
+      },
+      "seconds": 0.00020290000247769058
+    },
+    {
+      "round": 2,
+      "id": "call_cKw9CcYUJq2UPNBYlumMyGSe",
+      "name": "calculate",
+      "raw_arguments": "{\"expression\":\"1845-1837\"}",
+      "arguments": {
+        "expression": "1845-1837"
+      },
+      "result": {
+        "result": 8.0
+      },
+      "seconds": 0.00017460000526625663
+    }
+  ],
+  "errors": [],
+  "input_tokens": 1888,
+  "output_tokens": 106,
+  "cached_input_tokens": 0,
+  "rounds": 3,
+  "status": "answered",
+  "answer": "Stonecairn is older by 8 years.  \nANSWER: Stonecairn | 8",
+  "seconds": 6.675280800001929
+}

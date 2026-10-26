@@ -1,0 +1,468 @@
+{
+  "model": "gpt-5.6-luna",
+  "strategy": "S3",
+  "question": "Ossford, Stonecairn and Coldharbour all lost population between the 2020 and 2025 censuses. Which lost the largest percentage, and what was that percentage?",
+  "decimals": 2,
+  "settings": {
+    "reasoning_effort": "none",
+    "temperature": 0.7,
+    "max_rounds": 10,
+    "k": 1,
+    "vague_lookup": false
+  },
+  "tool_definitions": [
+    {
+      "type": "function",
+      "function": {
+        "name": "lookup",
+        "description": "Retrieve one factual field about a Nine Rivers district, or a regional water fact using entity Region. Returns the value, unit, relevant year, and source document IDs. Uses current profiles, excludes archived profiles, and applies correction notices. Use calculate for arithmetic.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "entity": {
+              "type": "string",
+              "description": "Exact district name, or Region for the regional water tariff and unit conversion."
+            },
+            "field": {
+              "type": "string",
+              "enum": [
+                "population_2020",
+                "population_2025",
+                "area_km2",
+                "budget_2025_million_tenge",
+                "water_use_2025",
+                "schools",
+                "pupils_2025_26",
+                "paved_road_km",
+                "founded_year",
+                "water_tariff_2025",
+                "megalitre_to_cubic_metres"
+              ],
+              "description": "The requested fact. Water use retains its original unit. The water tariff and conversion fields require entity Region."
+            }
+          },
+          "required": [
+            "entity",
+            "field"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "calculate",
+        "description": "Safely evaluate an arithmetic expression using numeric literals, parentheses, addition, subtraction, multiplication, division, and unary plus or minus. Returns a numeric result without rounding intermediate values. Rejects powers, names, function calls, attribute access, division by zero, and excessive expressions. Expressions are limited to 200 characters and 100 AST nodes; numeric magnitudes must not exceed 1000000000000000.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "expression": {
+              "type": "string",
+              "description": "Arithmetic expression to evaluate, for example 44675 / 921.4.",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": [
+            "expression"
+          ],
+          "additionalProperties": false
+        }
+      }
+    }
+  ],
+  "conversations": [
+    {
+      "sample": 1,
+      "messages": [
+        {
+          "role": "system",
+          "content": "Answer questions about the fictional Nine Rivers Region.\nUse only the supplied documents or facts returned by tools.\nRespect correction notices, years, and units.\nDo not invent facts.\nKeep intermediate precision and round only the final result.\nEnd with exactly:\nANSWER: <name or yes/no> | <number>\nUse lookup to retrieve facts and calculate to perform arithmetic."
+        },
+        {
+          "role": "user",
+          "content": "Ossford, Stonecairn and Coldharbour all lost population between the 2020 and 2025 censuses. Which lost the largest percentage, and what was that percentage?\nRound the final number to 2 decimal places."
+        },
+        {
+          "role": "assistant",
+          "annotations": [],
+          "tool_calls": [
+            {
+              "id": "call_gwC1JZ1lGGqLar2JBuUJAFWN",
+              "function": {
+                "arguments": "{\"entity\": \"Ossford\", \"field\": \"population_2020\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_lnHDWbdDIhHBaRFYmmYdjXZM",
+              "function": {
+                "arguments": "{\"entity\": \"Ossford\", \"field\": \"population_2025\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_4aUaMmxZunl9TZn67RB6KSV8",
+              "function": {
+                "arguments": "{\"entity\": \"Stonecairn\", \"field\": \"population_2020\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_b4X0AdSb9Qv9ZQ6tsbEYA2aH",
+              "function": {
+                "arguments": "{\"entity\": \"Stonecairn\", \"field\": \"population_2025\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_p9U1Q7lSqQKsDkgaSV3jxgbE",
+              "function": {
+                "arguments": "{\"entity\": \"Coldharbour\", \"field\": \"population_2020\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_73FSSJSoCqs17NuvJoYwZl8i",
+              "function": {
+                "arguments": "{\"entity\": \"Coldharbour\", \"field\": \"population_2025\"}",
+                "name": "lookup"
+              },
+              "type": "function"
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_gwC1JZ1lGGqLar2JBuUJAFWN",
+          "content": "{\"value\": 31560, \"unit\": \"residents\", \"year\": 2020, \"sources\": [\"NR-02\"]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_lnHDWbdDIhHBaRFYmmYdjXZM",
+          "content": "{\"value\": 30982, \"unit\": \"residents\", \"year\": 2025, \"sources\": [\"NR-02\"]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_4aUaMmxZunl9TZn67RB6KSV8",
+          "content": "{\"value\": 15473, \"unit\": \"residents\", \"year\": 2020, \"sources\": [\"NR-06\"]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_b4X0AdSb9Qv9ZQ6tsbEYA2aH",
+          "content": "{\"value\": 14926, \"unit\": \"residents\", \"year\": 2025, \"sources\": [\"NR-06\"]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_p9U1Q7lSqQKsDkgaSV3jxgbE",
+          "content": "{\"value\": 11902, \"unit\": \"residents\", \"year\": 2020, \"sources\": [\"NR-12\"]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_73FSSJSoCqs17NuvJoYwZl8i",
+          "content": "{\"value\": 11407, \"unit\": \"residents\", \"year\": 2025, \"sources\": [\"NR-12\"]}"
+        },
+        {
+          "role": "assistant",
+          "annotations": [],
+          "tool_calls": [
+            {
+              "id": "call_gzxmkw7fR6520kBZ2ooZqsO9",
+              "function": {
+                "arguments": "{\"expression\": \"(31560-30982)/31560*100\"}",
+                "name": "calculate"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_Ro7YiorhhXJN0h80A79mPrB4",
+              "function": {
+                "arguments": "{\"expression\": \"(15473-14926)/15473*100\"}",
+                "name": "calculate"
+              },
+              "type": "function"
+            },
+            {
+              "id": "call_f2rSW6sxv3isXwBbAREedk8t",
+              "function": {
+                "arguments": "{\"expression\": \"(11902-11407)/11902*100\"}",
+                "name": "calculate"
+              },
+              "type": "function"
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_gzxmkw7fR6520kBZ2ooZqsO9",
+          "content": "{\"result\": 1.8314321926489228}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_Ro7YiorhhXJN0h80A79mPrB4",
+          "content": "{\"result\": 3.535190331545272}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call_f2rSW6sxv3isXwBbAREedk8t",
+          "content": "{\"result\": 4.1589648798521255}"
+        },
+        {
+          "content": "Coldharbour lost the largest percentage: **4.16%**.\n\nANSWER: Coldharbour | 4.16%",
+          "role": "assistant",
+          "annotations": []
+        }
+      ]
+    }
+  ],
+  "api_calls": [
+    {
+      "sample": 1,
+      "round": 1,
+      "response_id": "chatcmpl-EdG3xet2Y3vSGSIL55ujPRwz2HUGJ",
+      "seconds": 4.876676300002146,
+      "usage": {
+        "completion_tokens": 153,
+        "prompt_tokens": 544,
+        "total_tokens": 697,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "text_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "image_tokens": null,
+          "text_tokens": null
+        }
+      },
+      "finish_reason": "tool_calls"
+    },
+    {
+      "sample": 1,
+      "round": 2,
+      "response_id": "chatcmpl-EdG41DPs7hd7S7U6KFZpnujE6WPok",
+      "seconds": 2.014280300005339,
+      "usage": {
+        "completion_tokens": 88,
+        "prompt_tokens": 891,
+        "total_tokens": 979,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "text_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "image_tokens": null,
+          "text_tokens": null
+        }
+      },
+      "finish_reason": "tool_calls"
+    },
+    {
+      "sample": 1,
+      "round": 3,
+      "response_id": "chatcmpl-EdG44PnoIPXeLYAdvLAKI5P1Wpian",
+      "seconds": 3.0715506999986246,
+      "usage": {
+        "completion_tokens": 29,
+        "prompt_tokens": 1031,
+        "total_tokens": 1060,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "text_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cache_write_tokens": 1028,
+          "cached_tokens": 0,
+          "image_tokens": null,
+          "text_tokens": null
+        }
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "tool_calls": [
+    {
+      "round": 1,
+      "id": "call_gwC1JZ1lGGqLar2JBuUJAFWN",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Ossford\", \"field\": \"population_2020\"}",
+      "arguments": {
+        "entity": "Ossford",
+        "field": "population_2020"
+      },
+      "result": {
+        "value": 31560,
+        "unit": "residents",
+        "year": 2020,
+        "sources": [
+          "NR-02"
+        ]
+      },
+      "seconds": 0.0005022000113967806
+    },
+    {
+      "round": 1,
+      "id": "call_lnHDWbdDIhHBaRFYmmYdjXZM",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Ossford\", \"field\": \"population_2025\"}",
+      "arguments": {
+        "entity": "Ossford",
+        "field": "population_2025"
+      },
+      "result": {
+        "value": 30982,
+        "unit": "residents",
+        "year": 2025,
+        "sources": [
+          "NR-02"
+        ]
+      },
+      "seconds": 0.00022840000747237355
+    },
+    {
+      "round": 1,
+      "id": "call_4aUaMmxZunl9TZn67RB6KSV8",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Stonecairn\", \"field\": \"population_2020\"}",
+      "arguments": {
+        "entity": "Stonecairn",
+        "field": "population_2020"
+      },
+      "result": {
+        "value": 15473,
+        "unit": "residents",
+        "year": 2020,
+        "sources": [
+          "NR-06"
+        ]
+      },
+      "seconds": 0.0001475000026402995
+    },
+    {
+      "round": 1,
+      "id": "call_b4X0AdSb9Qv9ZQ6tsbEYA2aH",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Stonecairn\", \"field\": \"population_2025\"}",
+      "arguments": {
+        "entity": "Stonecairn",
+        "field": "population_2025"
+      },
+      "result": {
+        "value": 14926,
+        "unit": "residents",
+        "year": 2025,
+        "sources": [
+          "NR-06"
+        ]
+      },
+      "seconds": 0.00014239999291021377
+    },
+    {
+      "round": 1,
+      "id": "call_p9U1Q7lSqQKsDkgaSV3jxgbE",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Coldharbour\", \"field\": \"population_2020\"}",
+      "arguments": {
+        "entity": "Coldharbour",
+        "field": "population_2020"
+      },
+      "result": {
+        "value": 11902,
+        "unit": "residents",
+        "year": 2020,
+        "sources": [
+          "NR-12"
+        ]
+      },
+      "seconds": 0.00014200000441633165
+    },
+    {
+      "round": 1,
+      "id": "call_73FSSJSoCqs17NuvJoYwZl8i",
+      "name": "lookup",
+      "raw_arguments": "{\"entity\": \"Coldharbour\", \"field\": \"population_2025\"}",
+      "arguments": {
+        "entity": "Coldharbour",
+        "field": "population_2025"
+      },
+      "result": {
+        "value": 11407,
+        "unit": "residents",
+        "year": 2025,
+        "sources": [
+          "NR-12"
+        ]
+      },
+      "seconds": 0.00013290000788401812
+    },
+    {
+      "round": 2,
+      "id": "call_gzxmkw7fR6520kBZ2ooZqsO9",
+      "name": "calculate",
+      "raw_arguments": "{\"expression\": \"(31560-30982)/31560*100\"}",
+      "arguments": {
+        "expression": "(31560-30982)/31560*100"
+      },
+      "result": {
+        "result": 1.8314321926489228
+      },
+      "seconds": 0.00019010000687558204
+    },
+    {
+      "round": 2,
+      "id": "call_Ro7YiorhhXJN0h80A79mPrB4",
+      "name": "calculate",
+      "raw_arguments": "{\"expression\": \"(15473-14926)/15473*100\"}",
+      "arguments": {
+        "expression": "(15473-14926)/15473*100"
+      },
+      "result": {
+        "result": 3.535190331545272
+      },
+      "seconds": 6.849999772384763e-05
+    },
+    {
+      "round": 2,
+      "id": "call_f2rSW6sxv3isXwBbAREedk8t",
+      "name": "calculate",
+      "raw_arguments": "{\"expression\": \"(11902-11407)/11902*100\"}",
+      "arguments": {
+        "expression": "(11902-11407)/11902*100"
+      },
+      "result": {
+        "result": 4.1589648798521255
+      },
+      "seconds": 4.47999918833375e-05
+    }
+  ],
+  "errors": [],
+  "input_tokens": 2466,
+  "output_tokens": 270,
+  "cached_input_tokens": 0,
+  "rounds": 3,
+  "status": "unanswered",
+  "answer": null,
+  "seconds": 9.974170899993624,
+  "reason": "Missing or incomplete final answer."
+}
