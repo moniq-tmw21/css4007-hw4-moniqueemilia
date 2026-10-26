@@ -386,6 +386,36 @@ The vague description did not remove all guidance: the tool name, parameter desc
 
 ### C2 — Three mistakes explained
 
+**S1 — Q-05: incorrect numerical answer**
+
+Log: `outputs/run_1/S1/Q-05.json`
+
+The model returned: "ANSWER: Coldharbour | 32921". The expected answer was Coldharbour, 14235, with a tolerance of ±1 tenge. The district was correct, but the numerical difference was incorrect.
+
+The direct response did not show intermediate calculations, so the log does not establish exactly where the error occurred. It could involve division, subtraction, or selecting the figures. S1 generated the number without an external calculator verifying it. A calculator would evaluate the supplied expression reliably within floating-point precision, although the model would still need to select the correct facts and construct the correct expression.
+
+
+**S2 — Q-05: voting selected a repeated arithmetic error**
+
+Log: `outputs/run_1/S2/Q-05.json`
+
+The five samples returned 14230, 14258, 14233, 14233, and 14226, all with the label Coldharbour. The voting result was "ANSWER: Coldharbour | 14233", with two winning votes out of five. This was the most frequent answer, but not a majority.
+
+Samples 3 and 4 reached 14233 through different inaccurate intermediate divisions. Sample 3 reported "193,283.13" and "207,516.43" tenge per resident, while sample 4 reported "193,282.03" and "207,514.68". Their final answers coincided despite these differences. The expected answer was 14235, so the selected value differed by 2 tenge and failed the ±1 tolerance.
+
+Sampling and voting can reduce occasional errors when the correct answer is consistently more frequent than each incorrect answer. They do not verify arithmetic or guarantee that this condition holds. Here, none of the five answers passed the scoring rule, and voting selected a repeated wrong value. S2 also paid for five complete prompts and responses.
+
+
+**S3 — Q-13: correct calculation rejected because of final formatting**
+
+Log: `outputs/run_1/S3/Q-13.json`
+
+The model retrieved six population facts and requested three percentage-loss calculations. For Coldharbour, it used `(11902-11407)/11902*100`. Its final line was "ANSWER: Coldharbour | 4.16%".
+
+Coldharbour and 4.16 were correct, but the percentage sign violated the required numeric-only answer format. The parser therefore marked the question unanswered and incorrect. This was an output-format failure rather than an arithmetic failure. The calculator improved numerical reliability but could not ensure that the model followed the final response contract.
+
+The conversation required three model rounds: retrieving facts, requesting calculations, and producing the final response. It made nine tool calls because several requests were grouped within each round. Later requests included the growing conversation history and tool definitions, increasing input-token overhead. The ten-round limit was not reached and did not cause this failure. A future revision could validate and repair final formatting, but the completed experiment retains the original scoring rule and results.
+
 ### C3 — Which strategy I would use, and what would change it
 
 ### C4 — How sure I can be
