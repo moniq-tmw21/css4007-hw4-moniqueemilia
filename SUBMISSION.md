@@ -283,11 +283,11 @@ Therefore, the actual run made seven tool calls instead of five and used four mo
 
 **What I kept the same:**
 
-Before the full runs, I will fix the model to gpt-5.6-luna, use the Chat Completions API with reasoning_effort="none", and use the same twenty questions, original corpus, required answer precision, final answer format, and scoring rule. Each question will start a fresh conversation.
+All three strategies use gpt-5.6-luna through the Chat Completions API with reasoning_effort="none" and temperature=0.7. The temperature setting was accepted during pilot tests of all three strategies. The twenty questions, original corpus, required answer precision, shared factual instructions, final answer format, and scoring rule are kept fixed. Each question starts a fresh conversation.
 
-S1 will receive all documents and answer in one model call. S2 will receive the same documents, be instructed to solve the question step by step, and generate five independent samples (k=5), followed by voting. S3 will receive no documents in its prompt and will access facts through lookup and calculate, with a limit of ten model calls per question.
+S1 receives all documents and answers directly in one model call. S2 receives the same documents, is instructed to solve the question step by step, and generates five independent samples (k=5), followed by voting. S3 receives no documents in its prompt and uses lookup and calculate, with a maximum of ten model calls per question.
 
-I will test whether temperature=0.7 is supported before the full runs. If supported, it will be used for all three strategies. Otherwise, temperature will be omitted consistently and this limitation will be recorded. All three strategies will be run on all twenty questions twice.
+The full experiment is performed twice. Questions are processed in file order, with S1, S2, and S3 executed sequentially for each question. No temperature fallback or automatic API retry is used. Logs include every successful call's usage, including all five S2 samples and all S3 rounds. Costs are estimated from token usage using standard rates of $0.20 per million uncached input tokens, $0.02 per million cached input tokens, and $1.20 per million output tokens.
 
 **My rule for a correct answer** 
 
