@@ -449,11 +449,18 @@ Cost also varied despite fixed settings. For example, S1 used 43,620 input token
 
 ### Final questions
 
-1.
-2.
-3.
-4.
-5.
-6.
-7.
-8.
+1.When the model sends a tool_calls message, it has generated requests describing which functions to call and their arguments. The Python functions have not run yet. My loop parses and validates those requests, executes the permitted functions, and returns a result for each tool_call_id.
+
+2.The arguments field arrives as a string containing JSON, which represents the requested parameters in a transportable format. My loop uses json.loads to convert it into a dictionary, then validates the names, required fields, types, and permitted values. Passing the string directly would not provide the named parameters expected by the function, and parsing alone would not establish that the request is valid.
+
+3.I measured the tool-definition overhead using two API requests with identical messages, one without tools and one with both definitions and tool_choice="none". Input usage increased from 10 to 425 tokens, giving an additional 415 input tokens for this configuration. The measurement is saved in outputs/tool_token_measurement.json; this overhead is included again whenever the definitions are sent in an S3 request.
+
+4.In run 1, S2 cost $0.026769 compared with S1's $0.008423, an additional $0.018346, or approximately 3.18 times as much. In run 2, S2 cost $0.020468 compared with $0.001991, an additional $0.018477, or approximately 10.28 times as much. S2 sent five complete prompts per question and generated five responses, while S1 made one call. The cost ratios differ from five because output lengths and cached-input usage affect the estimated charges.
+
+5.The maximum was five model rounds, reached by Q-14 in both runs and Q-17 in run 2. In the inspected Q-14 run 1 log, the model retrieved four district facts in round 1, requested the conversion factor in round 2, calculated two daily water-use values in round 3, calculated their difference in round 4, and answered in round 5. Q-17 in run 2 followed the same pattern but also retrieved the water tariff, giving nine tool calls compared with Q-14's eight. These executions used extra rounds because the model separated the conversion lookup and difference calculation instead of grouping them into earlier requests.
+
+6.For 100,000 documents, I would replace repeatedly reading and scanning the corpus with an indexed retrieval system. Exact entity and field queries could use a database index, while less structured queries could use keyword or semantic search. The retrieval process would still enforce year, archive, and correction rules and return limited results with source IDs. I would test retrieval accuracy separately because a calculator cannot repair facts retrieved from the wrong documents.
+
+7.My calculator parses expressions with ast and evaluates only numeric literals, approved arithmetic operators, and unary signs; it never uses eval or exec. It rejects names, calls, attribute access, powers, division by zero, expressions over 200 characters or 100 AST nodes, and excessive numeric magnitudes. The required malicious-input tests passed, including __import__('os').system('echo hi'), (1).__class__, and 9**9**9. The model can still provide an incorrect expression, trigger rejection, or encounter floating-point rounding, so safe execution does not guarantee a correct answer.
+
+8.Tools helped most with multi-step numerical questions involving division, unit conversion, and differences, such as Q-05, where S1 and S2 failed in run 1 but S3 returned the correct budget difference. They also made source selection explicit, including Brightwater's corrected area in Q-09. They did not improve the scored outcome for Q-13: all three strategies failed in both runs, and the inspected S3 log showed correct reasoning rejected because the final number included a percentage sign. For questions such as Q-01, which all strategies answered correctly in both runs, tools provided no observed accuracy gain.
